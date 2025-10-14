@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 )
 
@@ -24,14 +24,13 @@ func main() {
 			return
 		}
 
-		
-
 		err = tmpl.ExecuteTemplate(w, "index.html", nil)
 		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 	})
 
-	fmt.Println("Server starting : 5000")
 	http.ListenAndServe("localhost:5000", mux)
+	log.Println("Server starting : 5000")
 }
