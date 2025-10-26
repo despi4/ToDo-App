@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 	"todo-app/internal/models"
 	"todo-app/internal/repository"
 )
@@ -23,7 +24,24 @@ func (s *TodoService) CreateTodo(title string) error {
 	// 2. Создание структуры Todo
 	// 3. Вызов repo.Create(todo)
 	// 4. Возврат ошибки или nil
-	return errors.New("not implemented yet")
+
+	if len(title) != 0 {
+		// нельзя создавать задачу без названия
+		return errors.New("title can not be empty")
+	} else if len(title) > 100 {
+		return errors.New("title length can not be over 100")
+	}
+
+	newTodo := models.Todo{
+		Id:        1,
+		Title:     title,
+		Completed: false,
+		CreatedAt: time.Now(),
+	}
+
+	s.repo.Create(&newTodo)
+
+	return nil
 }
 
 // Получение списка задач с фильтром
