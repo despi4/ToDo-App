@@ -11,7 +11,7 @@ type TodoRepository interface {
 	Create(todo *models.Todo) error       // create todo
 	GetAll() ([]models.Todo, error)       // Get todo
 	GetById(id int) (*models.Todo, error) // search todo by id
-	Update()                              // update todo
+	Update(todo *models.Todo) error       // update todo
 	Delete()                              // delete todo
 }
 
@@ -23,11 +23,10 @@ func (db *Database) Create(todo *models.Todo) error {
 	}
 
 	if len(*db) == 0 {
-		(*db)[todo.Id] = todo
-		return nil
+		(*db)[1] = todo
+	} else {
+		(*db)[len(*db)+1] = todo
 	}
-
-	(*db)[todo.Id] = todo
 
 	return nil
 }
@@ -52,4 +51,12 @@ func (db *Database) GetById(id int) (*models.Todo, error) {
 	}
 
 	return nil, errors.New("database does not have this id")
+}
+
+func (db *Database) Update(todo *models.Todo) error {
+	if todo == nil {
+		return errors.New("todo must not be nil")
+	}
+
+	return nil
 }

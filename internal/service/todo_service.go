@@ -35,7 +35,6 @@ func (s *TodoService) CreateTodo(title string) error {
 	}
 
 	newTodo := models.Todo{
-		Id:        1,
 		Title:     title,
 		Completed: false,
 		CreatedAt: time.Now(),
