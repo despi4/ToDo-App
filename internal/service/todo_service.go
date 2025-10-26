@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"time"
 	"todo-app/internal/models"
 	"todo-app/internal/repository"
@@ -19,6 +20,7 @@ func NewTodoService(repo repository.TodoRepository) *TodoService {
 	return &TodoService{repo: repo}
 }
 
+// Create
 func (s *TodoService) CreateTodo(title string) error {
 	// 1. Валидация (title не должен быть пустым)
 	// 2. Создание структуры Todo
@@ -44,10 +46,42 @@ func (s *TodoService) CreateTodo(title string) error {
 	return nil
 }
 
-// Получение списка задач с фильтром
+// Update
+func (s *TodoService) MarkIsDone(title string) error {
+	return nil
+}
+
+// Получение списка задач с фильтром Read
 func (s *TodoService) GetTodos(filter string) ([]models.Todo, error) {
 	// 1. Получить все задачи repo.GetAll()
 	// 2. Отфильтровать (all, active, completed)
 	// 3. Вернуть результат
-	return nil, errors.New("not implemented yet")
+
+	todoList := s.repo.GetAll()
+
+	if strings.EqualFold("all", filter) || strings.EqualFold("completed", filter) || strings.EqualFold("active", filter) {
+		return nil, errors.New("incorrect filter")
+	}
+
+	var newTodoList []models.Todo
+
+	if strings.EqualFold("all", filter) {
+		return todoList, nil
+	} else if strings.EqualFold("active", filter) {
+		for _, todo := range todoList {
+			if !todo.Completed {
+				newTodoList = append(todoList, todo)
+			}
+		}
+
+		return newTodoList, nil
+	}
+
+	for _, todo := range todoList {
+		if todo.Completed {
+			newTodoList = append(newTodoList, todo)
+		}
+	}
+
+	return todoList, nil
 }

@@ -9,7 +9,7 @@ import (
 
 type TodoRepository interface {
 	Create(todo *models.Todo) error // create todo
-	GetAll()                        // Get todo
+	GetAll() []models.Todo// Get todo
 	GetById()                       // search todo by id
 	Update()                        // update todo
 	Delete()                        // delete todo
@@ -22,7 +22,22 @@ func (db *Database) Create(todo *models.Todo) error {
 		return errors.New("todo must not be nil")
 	}
 
+	if len(*db) == 0 {
+		(*db)[todo.Id] = todo
+		return nil
+	}
+
 	(*db)[todo.Id] = todo
-	
+
 	return nil
+}
+
+func (db *Database) GetAll() *[]models.Todo {
+	var todoList []models.Todo
+
+	for _, data := range (*db) {
+		todoList = append(todoList, *data)
+	}
+
+	return &todoList
 }
