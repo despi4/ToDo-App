@@ -57,7 +57,10 @@ func (s *TodoService) GetTodos(filter string) ([]models.Todo, error) {
 	// 2. Отфильтровать (all, active, completed)
 	// 3. Вернуть результат
 
-	todoList := s.repo.GetAll()
+	todoList, err := s.repo.GetAll()
+	if err != nil {
+		return nil, err
+	}
 
 	if strings.EqualFold("all", filter) || strings.EqualFold("completed", filter) || strings.EqualFold("active", filter) {
 		return nil, errors.New("incorrect filter")
