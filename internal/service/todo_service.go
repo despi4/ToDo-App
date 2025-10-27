@@ -21,16 +21,16 @@ func NewTodoService(repo repository.TodoRepository) *TodoService {
 }
 
 var (
-	nilTitle       = errors.New("title can not be title")
-	overheadTittle = errors.New("title length can not be over 100")
+	ErrNilTitle       = errors.New("title can not be title")
+	ErrOverheadTittle = errors.New("title length can not be over 100")
 )
 
 func validateTitle(title string) error {
 	if len(title) == 0 {
 		// нельзя создавать задачу без названия
-		return nilTitle
+		return ErrNilTitle
 	} else if len(title) > 100 {
-		return overheadTittle
+		return ErrOverheadTittle
 	}
 
 	return nil
@@ -63,7 +63,7 @@ func (s *TodoService) CreateTodo(title string) error {
 }
 
 // Update
-func (s *TodoService) MarkIsDone(id int) error {
+func (s *TodoService) UpdateStatusTodo(id int) error {
 	newStatusTodo := models.Todo{
 		Id:        id,
 		Completed: true,
@@ -78,7 +78,7 @@ func (s *TodoService) MarkIsDone(id int) error {
 }
 
 // Получение списка задач с фильтром Read
-func (s *TodoService) GetTodos(filter string) ([]models.Todo, error) {
+func (s *TodoService) GetTodo(filter string) ([]models.Todo, error) {
 	// 1. Получить все задачи repo.GetAll()
 	// 2. Отфильтровать (all, active, completed)
 	// 3. Вернуть результат
@@ -113,4 +113,13 @@ func (s *TodoService) GetTodos(filter string) ([]models.Todo, error) {
 	}
 
 	return todoList, nil
+}
+
+func (s *TodoService) DeleteTodo(id int) error {
+	err := s.repo.Delete(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

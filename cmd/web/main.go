@@ -3,13 +3,10 @@ package main
 import (
 	"log"
 	"net/http"
-	handlers "todo-app/internal/handlers"
 )
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", handlers.Home)
-	mux.HandleFunc("/todos", handlers.Todo)
 
 	log.Println("Server started on:8081...")
 	err := http.ListenAndServe(":8081", mux)
@@ -33,4 +30,3 @@ func main() {
 //    - выполняет INSERT
 //    - возвращает ошибку, если БД отказалась (например, дубль)
 //    - НЕ проверяет title!
-
