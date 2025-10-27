@@ -20,6 +20,22 @@ func NewTodoService(repo repository.TodoRepository) *TodoService {
 	return &TodoService{repo: repo}
 }
 
+var (
+	nilTitle       = errors.New("title can not be title")
+	overheadTittle = errors.New("title length can not be over 100")
+)
+
+func validateTitle(title string) error {
+	if len(title) == 0 {
+		// нельзя создавать задачу без названия
+		return nilTitle
+	} else if len(title) > 100 {
+		return overheadTittle
+	}
+
+	return nil
+}
+
 // Create
 func (s *TodoService) CreateTodo(title string) error {
 	// 1. Валидация (title не должен быть пустым)
@@ -27,11 +43,9 @@ func (s *TodoService) CreateTodo(title string) error {
 	// 3. Вызов repo.Create(todo)
 	// 4. Возврат ошибки или nil
 
-	if len(title) != 0 {
-		// нельзя создавать задачу без названия
-		return errors.New("title can not be empty")
-	} else if len(title) > 100 {
-		return errors.New("title length can not be over 100")
+	err := validateTitle(title)
+	if err != nil {
+		return err
 	}
 
 	newTodo := models.Todo{
@@ -40,13 +54,26 @@ func (s *TodoService) CreateTodo(title string) error {
 		CreatedAt: time.Now(),
 	}
 
-	s.repo.Create(&newTodo)
+	err = s.repo.Create(&newTodo)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 // Update
-func (s *TodoService) MarkIsDone(title string) error {
+func (s *TodoService) MarkIsDone(id int) error {
+	newStatusTodo := models.Todo{
+		Id:        id,
+		Completed: true,
+	}
+
+	err := s.repo.UpdateStatus(&newStatusTodo)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -61,7 +88,7 @@ func (s *TodoService) GetTodos(filter string) ([]models.Todo, error) {
 		return nil, err
 	}
 
-	if strings.EqualFold("all", filter) || strings.EqualFold("completed", filter) || strings.EqualFold("active", filter) {
+	if !(strings.EqualFold("all", filter) || strings.EqualFold("completed", filter) || strings.EqualFold("active", filter)) {
 		return nil, errors.New("incorrect filter")
 	}
 

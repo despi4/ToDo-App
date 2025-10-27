@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"log"
 	"todo-app/internal/models"
 )
 
@@ -11,7 +12,7 @@ type TodoRepository interface {
 	Create(todo *models.Todo) error       // create todo
 	GetAll() ([]models.Todo, error)       // Get todo
 	GetById(id int) (*models.Todo, error) // search todo by id
-	Update(todo *models.Todo) error       // update todo
+	UpdateStatus(todo *models.Todo) error // update todo
 	Delete(id int) error                  // delete todo
 }
 
@@ -59,13 +60,19 @@ func (db *Database) GetById(id int) (*models.Todo, error) {
 }
 
 // Poka I dont know
-func (db *Database) Update(todo *models.Todo) error {
+func (db *Database) UpdateStatus(todo *models.Todo) error {
 	if todo == nil {
 		return ErrNilInput
 	}
 
 	if _, ok := (*db).data[todo.Id]; ok {
-		(*db).data[todo.Id] = todo
+		(*db).data[todo.Id] = &models.Todo{
+			Id:        todo.Id,
+			Title:     (*db).data[todo.Id].Title,
+			Completed: todo.Completed,
+			CreatedAt: (*db).data[todo.Id].CreatedAt,
+		}
+		log.Printf("Status of element by id %d updated", todo.Id)
 		return nil
 	}
 
