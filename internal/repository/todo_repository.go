@@ -12,51 +12,72 @@ type TodoRepository interface {
 	GetAll() ([]models.Todo, error)       // Get todo
 	GetById(id int) (*models.Todo, error) // search todo by id
 	Update(todo *models.Todo) error       // update todo
-	Delete()                              // delete todo
+	Delete(id int) error                  // delete todo
 }
 
-type Database map[int]*models.Todo
+var (
+	ErrNotFound = errors.New("not found")
+	ErrNilInput = errors.New("nil input")
+)
 
+// type Database map[int]*models.Todo
+type Database struct {
+	data   map[int]*models.Todo
+	lastId int
+}
+
+// Method Create for create new todo
 func (db *Database) Create(todo *models.Todo) error {
 	if todo == nil {
-		return errors.New("todo must not be nil")
+		return ErrNilInput
 	}
 
-	if len(*db) == 0 {
-		(*db)[1] = todo
-	} else {
-		(*db)[len(*db)+1] = todo
-	}
+	(*db).lastId++
+	(*db).data[(*db).lastId] = todo
 
 	return nil
 }
 
+// GetAll for get slice of todo
 func (db *Database) GetAll() ([]models.Todo, error) {
 	var todoList []models.Todo
 
-	for _, data := range *db {
+	for _, data := range (*db).data {
 		todoList = append(todoList, *data)
 	}
 
 	return todoList, nil
 }
 
+// GetById method return pointer of todo
 func (db *Database) GetById(id int) (*models.Todo, error) {
-	if id < 1 {
-		return nil, errors.New("id can not be non-positive")
+	if _, ok := (*db).data[id]; ok {
+		return (*db).data[id], nil
 	}
 
-	if _, ok := (*db)[id]; ok {
-		return (*db)[id], nil
-	}
-
-	return nil, errors.New("database does not have this id")
+	return nil, ErrNotFound
 }
 
+// Poka I dont know
 func (db *Database) Update(todo *models.Todo) error {
 	if todo == nil {
-		return errors.New("todo must not be nil")
+		return ErrNilInput
 	}
 
-	return nil
+	if _, ok := (*db).data[todo.Id]; ok {
+		(*db).data[todo.Id] = todo
+		return nil
+	}
+
+	return ErrNotFound
+}
+
+// Delete for delete by id todo
+func (db *Database) Delete(id int) error {
+	if _, ok := (*db).data[id]; ok {
+		delete((*db).data, id)
+		return nil
+	}
+
+	return ErrNotFound
 }
