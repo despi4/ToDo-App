@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"log"
+
 	"todo-app/internal/models"
 )
 
@@ -25,6 +26,13 @@ var (
 type Database struct {
 	data   map[int]*models.Todo
 	lastId int
+}
+
+func NewDatabase() *Database {
+	return &Database{
+		data:   make(map[int]*models.Todo),
+		lastId: 0,
+	}
 }
 
 // Method Create for create new todo

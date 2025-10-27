@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"time"
+
 	"todo-app/internal/models"
 	"todo-app/internal/repository"
 )
@@ -12,11 +13,11 @@ import (
 // Этот файл предназначен для работы с задачами (create, read, update, delete)
 
 type TodoService struct {
-	repo repository.TodoRepository
+	repo *repository.Database
 }
 
 // Конструктор для инициализации сервиса
-func NewTodoService(repo repository.TodoRepository) *TodoService {
+func NewTodoService(repo *repository.Database) *TodoService {
 	return &TodoService{repo: repo}
 }
 
@@ -88,15 +89,13 @@ func (s *TodoService) GetTodo(filter string) ([]models.Todo, error) {
 		return nil, err
 	}
 
-	if !(strings.EqualFold("all", filter) || strings.EqualFold("completed", filter) || strings.EqualFold("active", filter)) {
-		return nil, errors.New("incorrect filter")
+	if strings.EqualFold("all", filter) || len(filter) != 0 {
+		return todoList, nil
 	}
 
 	var newTodoList []models.Todo
 
-	if strings.EqualFold("all", filter) {
-		return todoList, nil
-	} else if strings.EqualFold("active", filter) {
+	if strings.EqualFold("active", filter) {
 		for _, todo := range todoList {
 			if !todo.Completed {
 				newTodoList = append(todoList, todo)
@@ -104,15 +103,17 @@ func (s *TodoService) GetTodo(filter string) ([]models.Todo, error) {
 		}
 
 		return newTodoList, nil
-	}
-
-	for _, todo := range todoList {
-		if todo.Completed {
-			newTodoList = append(newTodoList, todo)
+	} else if strings.EqualFold("completed", filter) {
+		for _, todo := range todoList {
+			if todo.Completed {
+				newTodoList = append(newTodoList, todo)
+			}
 		}
+
+		return newTodoList, nil
 	}
 
-	return todoList, nil
+	return nil, errors.New("incorrect filter")
 }
 
 func (s *TodoService) DeleteTodo(id int) error {

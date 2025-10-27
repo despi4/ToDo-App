@@ -3,17 +3,32 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"todo-app/internal/handlers"
+	"todo-app/internal/repository"
+	"todo-app/internal/service"
 )
 
 func main() {
-	mux := http.NewServeMux()
+	db := repository.NewDatabase()
+	service := service.NewTodoService(db)
+	handler := handlers.NewTodoHandler(service)
 
-	log.Println("Server started on:8081...")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/todos", handler.CreateTodoHandler)
+	mux.HandleFunc("/todos/", handler.GetTodoHandler)
+
+	log.Print("Server started on 8081...")
 	err := http.ListenAndServe(":8081", mux)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
+
+// URL - endpoints | http://librarian.com/books
+// URI - уникальный адресс рессурса | http://librarian.com/books?author=Gogol (GET parametr)
+
+// API - интерфейс для взаимодействия между программами
 
 // Поток данных
 // HTTP Request >> handlers/ >> service/ >> repository/ >> models/
