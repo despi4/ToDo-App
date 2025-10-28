@@ -42,7 +42,10 @@ func (db *Database) Create(todo *models.Todo) error {
 	}
 
 	(*db).lastId++
+	todo.Id = (*db).lastId
 	(*db).data[(*db).lastId] = todo
+
+	log.Println((*db).data)
 
 	return nil
 }
@@ -67,7 +70,6 @@ func (db *Database) GetById(id int) (*models.Todo, error) {
 	return nil, ErrNotFound
 }
 
-// Poka I dont know
 func (db *Database) UpdateStatus(todo *models.Todo) error {
 	if todo == nil {
 		return ErrNilInput

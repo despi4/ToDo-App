@@ -61,9 +61,26 @@ func (h *TodoHandler) GetTodoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT
-// func (h *TodoHandler) MarkIsDoneHandler() error {
+func (h *TodoHandler) MarkIsDoneHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
-// }
+	type updateRequest struct {
+		Id int `json:"id"`
+	}
+
+	var req updateRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Todo updated succesfully"})
+}
 
 // DELETE
 // func (h *TodoHandler) DeleteTodoHandler() error {
