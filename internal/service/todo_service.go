@@ -89,7 +89,7 @@ func (s *TodoService) GetTodo(filter string) ([]models.Todo, error) {
 		return nil, err
 	}
 
-	if strings.EqualFold("all", filter) || len(filter) != 0 {
+	if strings.EqualFold("all", filter) || len(filter) == 0 {
 		return todoList, nil
 	}
 
