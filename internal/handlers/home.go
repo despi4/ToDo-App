@@ -54,6 +54,7 @@ func (h *TodoHandler) GetTodoHandler(w http.ResponseWriter, r *http.Request) {
 	todos, err := h.service.GetTodo(filter)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -78,6 +79,12 @@ func (h *TodoHandler) MarkIsDoneHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	err = h.service.UpdateStatusTodo(req.Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Todo updated succesfully"})
 }
@@ -86,3 +93,15 @@ func (h *TodoHandler) MarkIsDoneHandler(w http.ResponseWriter, r *http.Request) 
 // func (h *TodoHandler) DeleteTodoHandler() error {
 
 // }
+
+/*
+Зачем использовать конструкторы
+
+1)Инкапсуляция: вся логика создания объекта сосредоточена в одном месте.
+2)Упрощение использования: снаружи не нужно знать, как правильно создать TodoHandler, — просто вызываешь NewTodoHandler(service).
+3)Контроль зависимостей: можно быть уверенным, что объект всегда будет создан с нужными зависимостями (service в данном случае).
+4)Готовность к тестированию: легко подменить зависимости на тестовые (например, мок-сервис).
+*/
+
+// json.NewDecoder(...) - создаёт декодер JSON, который умеет читать JSON-данные из потока
+// json.NewDecoder(...).Decode(...) - декодирует (распаковывает) этот JSON в твою структуру Go.

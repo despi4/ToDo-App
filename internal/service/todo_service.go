@@ -89,31 +89,28 @@ func (s *TodoService) GetTodo(filter string) ([]models.Todo, error) {
 		return nil, err
 	}
 
-	if strings.EqualFold("all", filter) || len(filter) == 0 {
-		return todoList, nil
-	}
-
 	var newTodoList []models.Todo
 
-	if strings.EqualFold("active", filter) {
+	switch strings.ToLower(filter) {
+	case "all", "":
+		return todoList, nil
+	case "active":
 		for _, todo := range todoList {
 			if !todo.Completed {
-				newTodoList = append(todoList, todo)
+				newTodoList = append(newTodoList, todo)
 			}
 		}
-
-		return newTodoList, nil
-	} else if strings.EqualFold("completed", filter) {
+	case "completed":
 		for _, todo := range todoList {
 			if todo.Completed {
 				newTodoList = append(newTodoList, todo)
 			}
 		}
-
-		return newTodoList, nil
+	default:
+		return nil, errors.New("incorrect filter")
 	}
 
-	return nil, errors.New("incorrect filter")
+	return newTodoList, nil
 }
 
 func (s *TodoService) DeleteTodo(id int) error {
