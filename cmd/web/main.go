@@ -18,6 +18,7 @@ func main() {
 	mux.HandleFunc("/todos", handler.CreateTodoHandler)
 	mux.HandleFunc("/todos/", handler.GetTodoHandler)
 	mux.HandleFunc("/todos/update", handler.MarkIsDoneHandler)
+	mux.HandleFunc("/todos/delete", handler.DeleteTodoHandler)
 
 	log.Print("Server started on 8081...")
 	err := http.ListenAndServe(":8081", mux)

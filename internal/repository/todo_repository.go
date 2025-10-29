@@ -45,8 +45,6 @@ func (db *Database) Create(todo *models.Todo) error {
 	todo.Id = (*db).lastId
 	(*db).data[(*db).lastId] = todo
 
-	log.Println((*db).data)
-
 	return nil
 }
 
