@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"todo-app/internal/service"
 )
@@ -38,7 +39,7 @@ func (h *TodoHandler) CreateTodoHandler(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
+
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Todo created succesfully"})
 }
@@ -57,11 +58,35 @@ func (h *TodoHandler) GetTodoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(todos) != 0 {
-		w.WriteHeader(http.StatusNoContent)
+	// if len(todos) != 0 {
+	// 	w.WriteHeader(http.StatusNoContent)
+	// 	return
+	// }
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(todos)
+}
+
+func (h *TodoHandler) GetTodoByIdHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	json.NewEncoder(w).Encode(todos)
+
+	id := r.URL.Query().Get("id")
+	newId, err := strconv.Atoi(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	todo, err := h.service.GetTodoById(newId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(todo)
 }
 
 // PUT

@@ -113,6 +113,16 @@ func (s *TodoService) GetTodo(filter string) ([]models.Todo, error) {
 	return newTodoList, nil
 }
 
+func (s *TodoService) GetTodoById(id int) (models.Todo, error) {
+	todo, err := s.repo.GetById(id)
+	if err != nil {
+		return models.Todo{}, err
+	}
+
+	return *todo, nil
+}
+
+// Delete
 func (s *TodoService) DeleteTodo(id int) error {
 	err := s.repo.Delete(id)
 	if err != nil {

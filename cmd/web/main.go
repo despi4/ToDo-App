@@ -17,6 +17,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/todos", handler.CreateTodoHandler)
 	mux.HandleFunc("/todos/", handler.GetTodoHandler)
+	mux.HandleFunc("/todos/getbyid", handler.GetTodoByIdHandler)
 	mux.HandleFunc("/todos/update", handler.MarkIsDoneHandler)
 	mux.HandleFunc("/todos/delete", handler.DeleteTodoHandler)
 
