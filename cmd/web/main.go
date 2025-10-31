@@ -28,6 +28,10 @@ func main() {
 	}
 }
 
+func ConnectDatabase() {
+	
+}
+
 // URL - endpoints | http://librarian.com/books
 // URI - уникальный адресс рессурса | http://librarian.com/books?author=Gogol (GET parametr)
 
