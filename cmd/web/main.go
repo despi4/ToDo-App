@@ -2,11 +2,14 @@ package main
 
 import (
 	"bufio"
+	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
+	"todo-app/internal/config"
 	"todo-app/internal/handlers"
 	"todo-app/internal/repository"
 	"todo-app/internal/service"
@@ -18,8 +21,29 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	db := repository.NewDatabase()
-	service := service.NewTodoService(db)
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("Error loading configuration: ", err)
+	}
+
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
+		cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBHost, cfg.DBPort)
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Error connecting to the database: ", err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Error pinging database: ", err)
+	}
+
+	fmt.Println("Successfully connected to the PostgreSQL database!")
+
+	dbl := repository.NewDatabase()
+	service := service.NewTodoService(dbl)
 	handler := handlers.NewTodoHandler(service)
 
 	mux := http.NewServeMux()
