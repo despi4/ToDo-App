@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"todo-app/internal/handlers"
 	"todo-app/internal/repository"
@@ -10,6 +13,11 @@ import (
 )
 
 func main() {
+	err := LoadDotEnv()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	db := repository.NewDatabase()
 	service := service.NewTodoService(db)
 	handler := handlers.NewTodoHandler(service)
@@ -22,14 +30,42 @@ func main() {
 	mux.HandleFunc("/todos/delete", handler.DeleteTodoHandler)
 
 	log.Print("Server started on 8081...")
-	err := http.ListenAndServe(":8081", mux)
+	err = http.ListenAndServe(":8081", mux)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func ConnectDatabase() {
-	
+func LoadDotEnv() error {
+	file, err := os.Open("./.env")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.TrimSpace(line) == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		subLine := strings.SplitN(line, "=", 2)
+		if len(subLine) != 2 {
+			continue
+		}
+
+		var (
+			key   = strings.TrimSpace(subLine[0])
+			value = strings.Trim(strings.TrimSpace(subLine[1]), "\"")
+		)
+
+		os.Setenv(key, value)
+	}
+
+	return scanner.Err()
 }
 
 // URL - endpoints | http://librarian.com/books
