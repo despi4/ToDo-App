@@ -21,6 +21,7 @@ type Todo struct {
 	Task      string
 	Status    TodoStatus
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 var (
