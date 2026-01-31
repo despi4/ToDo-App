@@ -20,7 +20,7 @@ type User struct {
 // Domain Errors
 var (
 	ErrNotFound        = errors.New("not found")
-	ErrInvalidArgument = errors.New("invalid argumenmt")
+	ErrInvalidArgument = errors.New("invalid argument")
 	ErrConflict        = errors.New("conflict")
 	ErrForbidden       = errors.New("forbidden")
 )

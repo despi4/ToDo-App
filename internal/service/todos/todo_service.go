@@ -1,12 +1,10 @@
 package todosvc
 
-import "todo-app/internal/domain/todos"
-
 type TodoService struct {
-	repo *todos.TodoRepository
+	repo *TodoRepository
 }
 
-func NewTodoRepository(repo *todos.TodoRepository) *TodoService {
+func NewTodoRepository(repo *TodoRepository) *TodoService {
 	return &TodoService{
 		repo: repo,
 	}

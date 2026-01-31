@@ -10,26 +10,26 @@ import (
 type TodoStatus string
 
 const (
-	TodoStatusNotStarted TodoStatus = "Not Started"
-	TodoStatusInProgress TodoStatus = "In Progress"
-	TodoStatusDone       TodoStatus = "Done"
+	TodoStatusNotStarted TodoStatus = "not_started"
+	TodoStatusInProgress TodoStatus = "in_progress"
+	TodoStatusDone       TodoStatus = "done"
 )
 
 // Todo model
 type Todo struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	Title     string
-	Task      string
-	Status    TodoStatus
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	Title       string
+	Description string
+	Status      TodoStatus
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // Domain Errors
 var (
 	ErrNotFound        = errors.New("not found")
-	ErrInvalidArgument = errors.New("invalid argumenmt")
+	ErrInvalidArgument = errors.New("invalid argument")
 	ErrConflict        = errors.New("conflict")
 	ErrForbidden       = errors.New("forbidden")
 )
