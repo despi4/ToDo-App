@@ -15,16 +15,21 @@ const (
 	TodoStatusDone       TodoStatus = "Done"
 )
 
+// Todo model
 type Todo struct {
-	Id        uuid.UUID
-	Name      string
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Title     string
 	Task      string
 	Status    TodoStatus
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
+// Domain Errors
 var (
 	ErrNotFound        = errors.New("not found")
 	ErrInvalidArgument = errors.New("invalid argumenmt")
+	ErrConflict        = errors.New("conflict")
+	ErrForbidden       = errors.New("forbidden")
 )
