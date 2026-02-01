@@ -8,17 +8,17 @@ import (
 )
 
 type TodoRepository interface {
-	CreateTodo(ctx context.Context, todo todos.Todo) (Todo, err error)
+	CreateTodo(ctx context.Context, todo todos.Todo) (todos.Todo, error)
 	GetTodoByID(ctx context.Context, userID, ID uuid.UUID) (todo *todos.Todo, err error)
 	GetTodos(ctx context.Context, userID uuid.UUID, todoFilter TodoFilter) (todos []todos.Todo, err error)
-	UpdateTodo(ctx context.Context, userID uuid.UUID, ID uuid.UUID, todoUpdate TodoUpdate) error
+	UpdateTodo(ctx context.Context, userID uuid.UUID, ID uuid.UUID, todoUpdate TodoUpdate) (todos.Todo, error)
 	DeleteTodo(ctx context.Context, userID uuid.UUID, ID uuid.UUID) error
 }
 
 type TodoUpdate struct {
 	Status      todos.TodoStatus
 	Title       string
-	Description string
+	Description *string
 }
 
 type TodoFilter struct {

@@ -1,8 +1,14 @@
 package main
 
-func main() {
+import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"todo-app/internal/repository/postgre"
 
-}
+	"github.com/joho/godotenv"
+)
 
 // URL - endpoints | http://librarian.com/books
 // URI - уникальный адресс рессурса | http://librarian.com/books?author=Gogol (GET parametr)
@@ -24,3 +30,18 @@ func main() {
 //    - выполняет INSERT
 //    - возвращает ошибку, если БД отказалась (например, дубль)
 //    - НЕ проверяет title!
+
+func main() {
+	_ = godotenv.Load()
+	ctx := context.Background()
+
+	db, err := postgre.NewDB(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	fmt.Println(db)
+
+	log.Println("DB connected")
+}
