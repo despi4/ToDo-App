@@ -1,12 +1,7 @@
 package main
 
 import (
-	"context"
-	"log"
-	"os"
-	"todo-app/internal/repository/postgre"
-
-	"github.com/joho/godotenv"
+	"todo-app/internal/app"
 )
 
 // URL - endpoints | http://librarian.com/books
@@ -30,21 +25,6 @@ import (
 //    - возвращает ошибку, если БД отказалась (например, дубль)
 //    - НЕ проверяет title!
 
-type Person struct {
-	Name string
-	Age  int
-}
-
 func main() {
-	_ = godotenv.Load()
-	ctx := context.Background()
-	dsn := os.Getenv("DATABASE_URL")
-
-	db, err := postgre.NewDB(ctx, dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	repo := postgre.NewUserRepo(db)
-	log.Println(repo)
+	app.Init()
 }

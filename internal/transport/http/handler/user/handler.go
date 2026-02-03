@@ -16,9 +16,9 @@ type UserHandler struct {
 	service usersvc.UserService
 }
 
-func NewUserHandler(service usersvc.UserService) *UserHandler {
+func NewUserHandler(service *usersvc.UserService) *UserHandler {
 	return &UserHandler{
-		service: service,
+		service: *service,
 	}
 }
 
@@ -70,4 +70,23 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println(out)
+}
+
+func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
+	var updateReq userdto.UpdateUserRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
+		return
+	}
+
+	ctx := r.Context()
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+	defer cancel()
+
+	out, err := userHandler.service.Update(ctx, ID)
+}
+
+func (userHandler *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
+
 }

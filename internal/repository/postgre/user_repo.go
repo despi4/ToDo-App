@@ -16,12 +16,12 @@ import (
 // Repository — это Adapter, который делает базу данных совместимой с бизнес-логикой
 
 type UserRepo struct {
-	db *DB
+	db DB
 }
 
 func NewUserRepo(db *DB) *UserRepo {
 	return &UserRepo{
-		db: db,
+		db: *db,
 	}
 }
 

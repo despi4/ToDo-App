@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"todo-app/internal/domain/user"
+	users "todo-app/internal/domain/user"
 
 	"github.com/google/uuid"
 )
