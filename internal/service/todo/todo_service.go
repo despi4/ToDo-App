@@ -1,6 +1,6 @@
 package todosvc
 
-import "todo-app/internal/domain/todos"
+import "todo-app/internal/domain/todo"
 
 type TodoService struct {
 	repo *todos.TodoRepository

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"todo-app/internal/domain/users"
+	"todo-app/internal/domain/user"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
