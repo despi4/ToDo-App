@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"todo-app/internal/repository/postgre"
@@ -34,14 +33,13 @@ import (
 func main() {
 	_ = godotenv.Load()
 	ctx := context.Background()
+	dsn := os.Getenv("DATABASE_URL")
 
-	db, err := postgre.NewDB(ctx, os.Getenv("DATABASE_URL"))
+	db, err := postgre.NewDB(ctx, dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
-	fmt.Println(db)
-
-	log.Println("DB connected")
+	repo := postgre.NewUserRepo(db)
+	log.Println(repo)
 }
