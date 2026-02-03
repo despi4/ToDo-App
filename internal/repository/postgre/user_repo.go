@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // Repository — это не “часть базы данных”
@@ -53,7 +54,13 @@ func (u *UserRepo) CreateUser(ctx context.Context, user users.User) (users.User,
 	)
 
 	if err != nil {
-		return users.User{}, fmt.Errorf("repository CreateUser (id=%d): %w", user.ID, err)
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" && pgErr.ConstraintName == "users_email_key" {
+				return users.User{}, users.ErrEmailTaken
+			}
+		}
+		return users.User{}, fmt.Errorf("repository CreateUser (email=%s): %w", user.Email, err)
 	}
 
 	return out, nil
@@ -84,7 +91,7 @@ func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*users.User, 
 		return nil, fmt.Errorf("repository GetUserByID (id=%s): %w", ID, err)
 	}
 
-	return &user, err
+	return &user, nil
 }
 
 func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*users.User, error) {
@@ -154,6 +161,14 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 			return users.User{}, users.ErrNotFound
 		}
 
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" && pgErr.ConstraintName == "users_email_key" {
+				return users.User{}, users.ErrEmailTaken
+			}
+		}
+
 		return users.User{}, fmt.Errorf("repository UpdateUser (ID=%s): %w", ID, err)
 	}
 
@@ -168,7 +183,7 @@ func (u *UserRepo) DeleteUser(ctx context.Context, ID uuid.UUID) error {
 
 	cmd, err := u.db.Pool.Exec(ctx, sql, ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("repository DeleteUser (id=%s): %w", ID, err)
 	}
 
 	if cmd.RowsAffected() == 0 {

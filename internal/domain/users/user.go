@@ -19,8 +19,11 @@ type User struct {
 
 // Domain Errors
 var (
+	ErrUnauthorized    = errors.New("unauthorized")
 	ErrNotFound        = errors.New("not found")
 	ErrInvalidArgument = errors.New("invalid argument")
 	ErrConflict        = errors.New("conflict")
 	ErrForbidden       = errors.New("forbidden")
+	ErrAlreadyExists   = errors.New("already exists")
+	ErrEmailTaken      = errors.New("email taken")
 )

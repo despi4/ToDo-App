@@ -30,6 +30,11 @@ import (
 //    - возвращает ошибку, если БД отказалась (например, дубль)
 //    - НЕ проверяет title!
 
+type Person struct {
+	Name string
+	Age  int
+}
+
 func main() {
 	_ = godotenv.Load()
 	ctx := context.Background()
