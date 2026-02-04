@@ -1,4 +1,4 @@
-package users
+package userdomain
 
 type UserUpdate struct {
 	Name    *string

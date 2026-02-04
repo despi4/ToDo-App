@@ -25,7 +25,7 @@ func NewUserRepo(db *DB) *UserRepo {
 	}
 }
 
-func (u *UserRepo) CreateUser(ctx context.Context, user users.User) (users.User, error) {
+func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdomain.User, error) {
 	sql := `
 		INSERT INTO users (id, name, surname, email)
 		values ($1, $2, $3, $4)
@@ -43,7 +43,7 @@ func (u *UserRepo) CreateUser(ctx context.Context, user users.User) (users.User,
 		user.ID = uuid.New()
 	}
 
-	var out users.User
+	var out userdomain.User
 	err := u.db.Pool.QueryRow(ctx, sql, user.ID, user.Name, user.Surname, user.Email).Scan(
 		&out.ID,
 		&out.Name,
@@ -57,23 +57,23 @@ func (u *UserRepo) CreateUser(ctx context.Context, user users.User) (users.User,
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" && pgErr.ConstraintName == "users_email_key" {
-				return users.User{}, users.ErrEmailTaken
+				return userdomain.User{}, userdomain.ErrEmailTaken
 			}
 		}
-		return users.User{}, fmt.Errorf("repository CreateUser (email=%s): %w", user.Email, err)
+		return userdomain.User{}, fmt.Errorf("repository CreateUser (email=%s): %w", user.Email, err)
 	}
 
 	return out, nil
 }
 
-func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*users.User, error) {
+func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*userdomain.User, error) {
 	sql := `
 		SELECT id, name, surname, email, created_at, updated_at
 		FROM users
 		WHERE id = $1;
 	`
 
-	var user users.User
+	var user userdomain.User
 	err := u.db.Pool.QueryRow(ctx, sql, ID).Scan(
 		&user.ID,
 		&user.Name,
@@ -85,7 +85,7 @@ func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*users.User, 
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, users.ErrNotFound
+			return nil, userdomain.ErrNotFound
 		}
 
 		return nil, fmt.Errorf("repository GetUserByID (id=%s): %w", ID, err)
@@ -94,14 +94,14 @@ func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*users.User, 
 	return &user, nil
 }
 
-func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*users.User, error) {
+func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*userdomain.User, error) {
 	sql := `
 		select id, name, surname, email, created_at, updated_at
 		from users
 		where email = $1;
 	`
 
-	var user users.User
+	var user userdomain.User
 	err := u.db.Pool.QueryRow(ctx, sql, email).Scan(
 		&user.ID,
 		&user.Name,
@@ -113,7 +113,7 @@ func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*users.Use
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, users.ErrNotFound
+			return nil, userdomain.ErrNotFound
 		}
 
 		return nil, fmt.Errorf("repository GetUserByEmail (email=%s): %w", email, err)
@@ -122,13 +122,13 @@ func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*users.Use
 	return &user, nil
 }
 
-func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate users.UserUpdate) (users.User, error) {
+func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate userdomain.UserUpdate) (userdomain.User, error) {
 	parts, args, pos := updateValidate(userUpdate)
 
 	if len(parts) == 0 {
 		user, err := u.GetUserByID(ctx, ID)
 		if err != nil {
-			return users.User{}, err
+			return userdomain.User{}, err
 		}
 
 		return *user, nil
@@ -146,7 +146,7 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 		returning id, name, surname, email, created_at, updated_at;
 	`, strings.Join(parts, ", "), wherePos)
 
-	var out users.User
+	var out userdomain.User
 	err := u.db.Pool.QueryRow(ctx, sql, args...).Scan(
 		&out.ID,
 		&out.Name,
@@ -158,18 +158,18 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return users.User{}, users.ErrNotFound
+			return userdomain.User{}, userdomain.ErrNotFound
 		}
 
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" && pgErr.ConstraintName == "users_email_key" {
-				return users.User{}, users.ErrEmailTaken
+				return userdomain.User{},userdomain.ErrEmailTaken
 			}
 		}
 
-		return users.User{}, fmt.Errorf("repository UpdateUser (ID=%s): %w", ID, err)
+		return userdomain.User{}, fmt.Errorf("repository UpdateUser (ID=%s): %w", ID, err)
 	}
 
 	return out, nil
@@ -187,13 +187,13 @@ func (u *UserRepo) DeleteUser(ctx context.Context, ID uuid.UUID) error {
 	}
 
 	if cmd.RowsAffected() == 0 {
-		return users.ErrNotFound
+		return userdomain.ErrNotFound
 	}
 
 	return nil
 }
 
-func updateValidate(userUpdate users.UserUpdate) (parts []string, args []any, position int) {
+func updateValidate(userUpdate userdomain.UserUpdate) (parts []string, args []any, position int) {
 	parts = make([]string, 0, 4)
 	args = make([]any, 0, 5)
 	position = 1

@@ -7,18 +7,17 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	users "todo-app/internal/domain/user"
-	usersvc "todo-app/internal/service/user"
+	userdomain "todo-app/internal/domain/user"
 	userdto "todo-app/internal/transport/http/dto/user"
 )
 
 type UserHandler struct {
-	service usersvc.UserService
+	service userdomain.UserService
 }
 
-func NewUserHandler(service *usersvc.UserService) *UserHandler {
+func NewUserHandler(service userdomain.UserService) *UserHandler {
 	return &UserHandler{
-		service: *service,
+		service: service,
 	}
 }
 
@@ -57,7 +56,7 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
-	user := users.User{
+	user := userdomain.User{
 		Name:    name,
 		Surname: surname,
 		Email:   email,
@@ -84,7 +83,7 @@ func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
-	out, err := userHandler.service.Update(ctx, ID)
+	// out, err := userHandler.service.Update(ctx, ID)
 }
 
 func (userHandler *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {

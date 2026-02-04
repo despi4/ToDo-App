@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	userdomain "todo-app/internal/domain/user"
 	users "todo-app/internal/domain/user"
 
 	"github.com/google/uuid"
@@ -13,16 +14,16 @@ import (
 var emailRegex = regexp.MustCompile(`(?i)^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$`)
 
 type UserService struct {
-	repo users.UserRepository
+	repo userdomain.UserRepository
 }
 
-func NewUserService(repo users.UserRepository) *UserService {
+func NewUserService(repo userdomain.UserRepository) *UserService {
 	return &UserService{
 		repo: repo,
 	}
 }
 
-func (userSvc *UserService) Create(ctx context.Context, user users.User) (users.User, error) {
+func (userSvc *UserService) Create(ctx context.Context, user userdomain.User) (userdomain.User, error) {
 	if err := validateUser(&user.Name, &user.Surname, &user.Email); err != nil {
 		return users.User{}, err
 	}
@@ -35,7 +36,7 @@ func (userSvc *UserService) Create(ctx context.Context, user users.User) (users.
 	return user, nil
 }
 
-func (userSvc *UserService) GetByID(ctx context.Context, ID uuid.UUID) (user *users.User, err error) {
+func (userSvc *UserService) GetByID(ctx context.Context, ID uuid.UUID) (user *userdomain.User, err error) {
 	if ID == uuid.Nil {
 		return nil, users.ErrInvalidArgument
 	}
@@ -48,7 +49,7 @@ func (userSvc *UserService) GetByID(ctx context.Context, ID uuid.UUID) (user *us
 	return user, nil
 }
 
-func (userSvc *UserService) GetByEmail(ctx context.Context, email string) (user *users.User, err error) {
+func (userSvc *UserService) GetByEmail(ctx context.Context, email string) (user *userdomain.User, err error) {
 	err = validateUser(nil, nil, &email)
 	if err != nil {
 		return nil, err
@@ -62,7 +63,7 @@ func (userSvc *UserService) GetByEmail(ctx context.Context, email string) (user 
 	return user, nil
 }
 
-func (userSvc *UserService) Update(ctx context.Context, ID uuid.UUID, userUpdate users.UserUpdate) (users.User, error) {
+func (userSvc *UserService) Update(ctx context.Context, ID uuid.UUID, userUpdate userdomain.UserUpdate) (userdomain.User, error) {
 	if ID == uuid.Nil {
 		return users.User{}, users.ErrInvalidArgument
 	}
