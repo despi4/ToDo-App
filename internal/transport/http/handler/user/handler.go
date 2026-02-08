@@ -74,25 +74,12 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Set("content-type", "application-json")
 
-		var (
-			err_msg string
-			status  int
-		)
-
-		if errors.Is(err, userdomain.ErrNotFound) {
-			err_msg = userdomain.ErrNotFound.Error()
-			status = http.StatusNotFound
-		} else {
-			err_msg = "Internal Server Error"
-			status = http.StatusNotFound
-		}
-
 		errRes := userdto.ErrorResponse{
-			Error:     err_msg,
-			ErrorCode: status,
+			Error:    "Internal Server Error",
+			ErrorCode: http.StatusBadRequest,
 		}
 
-		w.WriteHeader(status)
+		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(&errRes)
 
@@ -177,6 +164,7 @@ func (userHandler *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) 
 }
 
 func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application-json")
 	queryParams := r.URL.Query()
 	defer r.Body.Close()
 
@@ -229,7 +217,7 @@ func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Reques
 
 		json.NewEncoder(w).Encode(&errRes)
 
-		log.Printf("Can't Get User by email(%s): %s", user.Email, err)
+		log.Printf("Can't Get User by email(%s): %s",email, err)
 
 		return
 	}
@@ -251,6 +239,7 @@ func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Reques
 }
 
 func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application-json")
 	url := strings.Split(r.URL.Path, "/")
 	defer r.Body.Close()
 
@@ -320,6 +309,7 @@ func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&errRes)
 
 		log.Printf("User not Updated: %s", err)
+		return
 	}
 
 	var getRes userdto.GetUserResponse
@@ -394,5 +384,5 @@ func (userHandler *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	log.Printf("User Deleted by email=%s", id)
+	log.Printf("User Deleted by id=%s", id)
 }
