@@ -12,7 +12,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Init() {
+func Run() {
 	_ = godotenv.Load()
 	dsn := os.Getenv("DATABASE_URL")
 

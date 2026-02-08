@@ -7,3 +7,8 @@ type GetUserResponse struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
+
+type ErrorResponse struct {
+	Error     string `json:"error"`
+	ErrorCode int    `json:"error_code"`
+}

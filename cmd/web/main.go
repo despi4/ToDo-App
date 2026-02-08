@@ -26,5 +26,5 @@ import (
 //    - НЕ проверяет title!
 
 func main() {
-	app.Init()
+	app.Run()
 }

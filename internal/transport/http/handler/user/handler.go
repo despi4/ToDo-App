@@ -3,6 +3,7 @@ package userhandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strings"
@@ -36,7 +37,19 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	// 1) Unmarshaling
 	if err := json.NewDecoder(r.Body).Decode(&creatReq); err != nil {
-		http.Error(w, "invalid json", http.StatusBadRequest)
+		w.Header().Set("content-type", "application-json")
+
+		errRes := userdto.ErrorResponse{
+			Error:     userdomain.ErrInvalidArgument.Error(),
+			ErrorCode: http.StatusBadRequest,
+		}
+
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("User Not Created: %s", err)
+
 		return
 	}
 	defer r.Body.Close()
@@ -59,7 +72,32 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	out, err := userHandler.service.Create(ctx, user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("content-type", "application-json")
+
+		var (
+			err_msg string
+			status  int
+		)
+
+		if errors.Is(err, userdomain.ErrNotFound) {
+			err_msg = userdomain.ErrNotFound.Error()
+			status = http.StatusNotFound
+		} else {
+			err_msg = "Internal Server Error"
+			status = http.StatusNotFound
+		}
+
+		errRes := userdto.ErrorResponse{
+			Error:     err_msg,
+			ErrorCode: status,
+		}
+
+		w.WriteHeader(status)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("User not created: %s", err)
+
 		return
 	}
 
@@ -69,16 +107,21 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (userHandler *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
-	url := r.URL.Path[7:]
-
-	id, err := uuid.Parse(url)
+	url := strings.Split(r.URL.Path, "/")
+	id, err := uuid.Parse(url[len(url)-1])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+		w.Header().Set("content-type", "application-json")
+		errRes := userdto.ErrorResponse{
+			Error:     userdomain.ErrInvalidArgument.Error(),
+			ErrorCode: http.StatusBadRequest,
+		}
 
-	if id == uuid.Nil {
-		http.Error(w, "id is required", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("Can't Get User by id: %s", err)
+
 		return
 	}
 
@@ -88,7 +131,32 @@ func (userHandler *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) 
 
 	user, err := userHandler.service.GetByID(ctx, id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("content-type", "application-json")
+
+		var (
+			err_msg string
+			status  int
+		)
+
+		if errors.Is(err, userdomain.ErrNotFound) {
+			err_msg = userdomain.ErrNotFound.Error()
+			status = http.StatusNotFound
+		} else {
+			err_msg = "Internal Server Error"
+			status = http.StatusNotFound
+		}
+
+		errRes := userdto.ErrorResponse{
+			Error:     err_msg,
+			ErrorCode: status,
+		}
+
+		w.WriteHeader(status)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("Can't Get User by id: %s", err)
+
 		return
 	}
 
@@ -103,9 +171,9 @@ func (userHandler *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(&getRes); err != nil {
-		http.Error(w, "invalid something", http.StatusBadRequest)
-	}
+	json.NewEncoder(w).Encode(&getRes)
+
+	log.Println("Get User by id")
 }
 
 func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +184,18 @@ func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Reques
 
 	email := strings.TrimSpace(queryEmail)
 	if email == "" {
-		http.Error(w, "email is requied", http.StatusBadRequest)
+		w.Header().Set("content-type", "application-json")
+		errRes := userdto.ErrorResponse{
+			Error:     userdomain.ErrInvalidArgument.Error(),
+			ErrorCode: http.StatusBadRequest,
+		}
+
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("Can't Get User by email: %s", userdomain.ErrInvalidArgument)
+
 		return
 	}
 
@@ -126,7 +205,32 @@ func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Reques
 
 	user, err := userHandler.service.GetByEmail(ctx, email)
 	if err != nil {
-		http.Error(w, "service error", http.StatusInternalServerError)
+		w.Header().Set("content-type", "application-json")
+
+		var (
+			err_msg string
+			status  int
+		)
+
+		if errors.Is(err, userdomain.ErrNotFound) {
+			err_msg = userdomain.ErrNotFound.Error()
+			status = http.StatusNotFound
+		} else {
+			err_msg = "Internal Server Error"
+			status = http.StatusInternalServerError
+		}
+
+		errRes := userdto.ErrorResponse{
+			Error:     err_msg,
+			ErrorCode: status,
+		}
+
+		w.WriteHeader(status)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("Can't Get User by email(%s): %s", user.Email, err)
+
 		return
 	}
 
@@ -141,32 +245,47 @@ func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Reques
 	}
 
 	// w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(&getRes); err != nil {
-		http.Error(w, "invalid something", http.StatusBadRequest)
-	}
+	json.NewEncoder(w).Encode(&getRes)
 
 	log.Printf("Get User by email=%s\n", user.Email)
 }
 
 func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path[:7]
+	url := strings.Split(r.URL.Path, "/")
 	defer r.Body.Close()
 
-	id, err := uuid.Parse(path)
+	id, err := uuid.Parse(url[len(url)-1])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+		w.Header().Set("content-type", "application-json")
+		errRes := userdto.ErrorResponse{
+			Error:     userdomain.ErrInvalidArgument.Error(),
+			ErrorCode: http.StatusBadRequest,
+		}
 
-	if id == uuid.Nil {
-		http.Error(w, "id is required", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("User not Updated: %s", err)
+
 		return
 	}
 
 	var updateReq userdto.UpdateUserRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
-		http.Error(w, "invalid json", http.StatusBadRequest)
+		w.Header().Set("content-type", "application-json")
+		errRes := userdto.ErrorResponse{
+			Error:     userdomain.ErrInvalidArgument.Error(),
+			ErrorCode: http.StatusBadRequest,
+		}
+
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("User not Updated: %s", err)
+
 		return
 	}
 
@@ -176,8 +295,31 @@ func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	user, err := userHandler.service.Update(ctx, id, userdomain.UserUpdate(updateReq))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		w.Header().Set("content-type", "application-json")
+
+		var (
+			err_msg string
+			status  int
+		)
+
+		if errors.Is(err, userdomain.ErrNotFound) {
+			err_msg = userdomain.ErrNotFound.Error()
+			status = http.StatusNotFound
+		} else {
+			err_msg = "Internal Server Error"
+			status = http.StatusInternalServerError
+		}
+
+		errRes := userdto.ErrorResponse{
+			Error:     err_msg,
+			ErrorCode: status,
+		}
+
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("User not Updated: %s", err)
 	}
 
 	var getRes userdto.GetUserResponse
@@ -191,27 +333,29 @@ func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(&getRes); err != nil {
-		http.Error(w, "invalid something", http.StatusBadRequest)
-	}
+	json.NewEncoder(w).Encode(&getRes)
 
 	log.Printf("User Updated by email=%s\n", user.Email)
 }
 
 func (userHandler *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	queryParams := r.URL.Query()
+	url := strings.Split(r.URL.Path, "/")
+	id, err := uuid.Parse(url[len(url)-1])
 	defer r.Body.Close()
 
-	queryID := queryParams.Get("id")
-
-	id, err := uuid.Parse(queryID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+		w.Header().Set("content-type", "application-json")
+		errRes := userdto.ErrorResponse{
+			Error:     userdomain.ErrInvalidArgument.Error(),
+			ErrorCode: http.StatusBadRequest,
+		}
 
-	if id != uuid.Nil {
-		http.Error(w, "id is required", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("User not Deleted: %s", err)
+
 		return
 	}
 
@@ -221,7 +365,31 @@ func (userHandler *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err = userHandler.service.Delete(ctx, id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("content-type", "application-json")
+		var (
+			err_msg string
+			status  int
+		)
+
+		if errors.Is(err, userdomain.ErrNotFound) {
+			err_msg = userdomain.ErrNotFound.Error()
+			status = http.StatusNotFound
+		} else {
+			err_msg = "Internal Server Error"
+			status = http.StatusInternalServerError
+		}
+
+		errRes := userdto.ErrorResponse{
+			Error:     err_msg,
+			ErrorCode: status,
+		}
+
+		w.WriteHeader(status)
+
+		json.NewEncoder(w).Encode(&errRes)
+
+		log.Printf("User not deleted: %s", err)
+
 		return
 	}
 
