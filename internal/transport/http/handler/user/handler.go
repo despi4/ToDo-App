@@ -13,6 +13,14 @@ import (
 	"github.com/google/uuid"
 )
 
+/*
+Если не вызывать метод w.WriteHeader()
+напрямую, тогда первый вызов w.Write()
+автоматически отправит пользователю код состояния 200 OK.
+Поэтому, если вы хотите вернуть другой код состояния,
+вызовите один раз метод w.WriteHeader() перед любым вызовом w.Write()
+*/
+
 type UserHandler struct {
 	service userdomain.UserService
 }
@@ -56,12 +64,11 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-
-	log.Println("New User created")
-	log.Printf("ID: %s, Name: %s, Surname: %s, Email: %s, CreatedAt: %s, UpdteadAt: %s\n", out.ID, out.Name, out.Surname, out.Email, out.CreatedAt, out.UpdatedAt)
+	log.Printf("New User Created by email=%s\n", out.Email)
 }
 
 func (userHandler *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
 	url := r.URL.Path[7:]
 
 	id, err := uuid.Parse(url)
@@ -85,10 +92,20 @@ func (userHandler *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	var getRes userdto.GetUserResponse
 
-	log.Println("Get User By ID")
-	log.Printf("ID: %s, Name: %s, Surname: %s, Email: %s, CreatedAt: %s, UpdteadAt: %s\n", user.ID, user.Name, user.Surname, user.Email, user.CreatedAt, user.UpdatedAt)
+	getRes = userdto.GetUserResponse{
+		Name:      user.Name,
+		Surname:   user.Surname,
+		Email:     user.Email,
+		CreatedAt: time.Time(user.CreatedAt).Format(time.DateTime),
+		UpdatedAt: time.Time(user.UpdatedAt).Format(time.DateTime),
+	}
+
+	// w.WriteHeader(http.StatusOK)
+	if err = json.NewEncoder(w).Encode(&getRes); err != nil {
+		http.Error(w, "invalid something", http.StatusBadRequest)
+	}
 }
 
 func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Request) {
@@ -113,14 +130,27 @@ func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	var getRes userdto.GetUserResponse
 
-	log.Println("Get User By Email")
-	log.Printf("ID: %s, Name: %s, Surname: %s, Email: %s, CreatedAt: %s, UpdteadAt: %s\n", user.ID, user.Name, user.Surname, user.Email, user.CreatedAt, user.UpdatedAt)
+	getRes = userdto.GetUserResponse{
+		Name:      user.Name,
+		Surname:   user.Surname,
+		Email:     user.Email,
+		CreatedAt: time.Time(user.CreatedAt).Format(time.DateTime),
+		UpdatedAt: time.Time(user.UpdatedAt).Format(time.DateTime),
+	}
+
+	// w.WriteHeader(http.StatusOK)
+	if err = json.NewEncoder(w).Encode(&getRes); err != nil {
+		http.Error(w, "invalid something", http.StatusBadRequest)
+	}
+
+	log.Printf("Get User by email=%s\n", user.Email)
 }
 
 func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path[:7]
+	defer r.Body.Close()
 
 	id, err := uuid.Parse(path)
 	if err != nil {
@@ -150,22 +180,22 @@ func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	var getRes userdto.GetUserResponse
 
-	log.Println("User updated")
-	log.Println("Updated rows")
-
-	if updateReq.Name != nil {
-		log.Println("name: ", user.Name)
+	getRes = userdto.GetUserResponse{
+		Name:      user.Name,
+		Surname:   user.Surname,
+		Email:     user.Email,
+		CreatedAt: time.Time(user.CreatedAt).Format(time.DateTime),
+		UpdatedAt: time.Time(user.UpdatedAt).Format(time.DateTime),
 	}
 
-	if updateReq.Surname != nil {
-		log.Println("surname: ", user.Surname)
+	// w.WriteHeader(http.StatusOK)
+	if err = json.NewEncoder(w).Encode(&getRes); err != nil {
+		http.Error(w, "invalid something", http.StatusBadRequest)
 	}
 
-	if updateReq.Email != nil {
-		log.Println("email: ", user.Email)
-	}
+	log.Printf("User Updated by email=%s\n", user.Email)
 }
 
 func (userHandler *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -196,4 +226,5 @@ func (userHandler *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	log.Printf("User Deleted by email=%s", id)
 }

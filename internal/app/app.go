@@ -34,8 +34,8 @@ func Init() {
 	router.HandleFunc("PATCH /users/{id}", handler.Update)
 	router.HandleFunc("DELETE /users/{id}", handler.Delete)
 
-	log.Println("Server started on : 3000")
-	err = http.ListenAndServe(":3000", router)
+	log.Println("Server started on : 8080")
+	err = http.ListenAndServe(":8080", router)
 	if err != nil {
 		log.Fatal(err)
 	}
