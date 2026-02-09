@@ -39,7 +39,7 @@ func Run() {
 	mux := middleware.SecureHeaders(router)
 
 	log.Printf("Server started on : %s\n", port)
-	err = http.ListenAndServe(":"+port, mux)
+	err = http.ListenAndServe(":"+port, middleware.Logger(mux))
 	if err != nil {
 		log.Fatal(err)
 	}
