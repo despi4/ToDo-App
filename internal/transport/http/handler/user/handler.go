@@ -58,16 +58,22 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		name    = strings.TrimSpace(creatReq.Name)
 		surname = strings.TrimSpace(creatReq.Surname)
 		email   = strings.TrimSpace(creatReq.Email)
+		role    userdomain.Role
 	)
 
 	ctx := r.Context()
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
+	if creatReq.Role != nil {
+		role = *creatReq.Role
+	}
+
 	user := userdomain.User{
 		Name:    name,
 		Surname: surname,
 		Email:   email,
+		Role:    role,
 	}
 
 	out, err := userHandler.service.Create(ctx, user)
@@ -75,7 +81,7 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application-json")
 
 		errRes := userdto.ErrorResponse{
-			Error:    "Internal Server Error",
+			Error:     "Internal Server Error",
 			ErrorCode: http.StatusBadRequest,
 		}
 
@@ -155,6 +161,7 @@ func (userHandler *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) 
 		Email:     user.Email,
 		CreatedAt: time.Time(user.CreatedAt).Format(time.DateTime),
 		UpdatedAt: time.Time(user.UpdatedAt).Format(time.DateTime),
+		Role:      user.Role,
 	}
 
 	// w.WriteHeader(http.StatusOK)
@@ -217,7 +224,7 @@ func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Reques
 
 		json.NewEncoder(w).Encode(&errRes)
 
-		log.Printf("Can't Get User by email(%s): %s",email, err)
+		log.Printf("Can't Get User by email(%s): %s", email, err)
 
 		return
 	}
@@ -230,7 +237,10 @@ func (userHandler *UserHandler) GetByEmail(w http.ResponseWriter, r *http.Reques
 		Email:     user.Email,
 		CreatedAt: time.Time(user.CreatedAt).Format(time.DateTime),
 		UpdatedAt: time.Time(user.UpdatedAt).Format(time.DateTime),
+		Role:      user.Role,
 	}
+
+	log.Println(getRes.Role)
 
 	// w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&getRes)
@@ -320,6 +330,7 @@ func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Email:     user.Email,
 		CreatedAt: time.Time(user.CreatedAt).Format(time.DateTime),
 		UpdatedAt: time.Time(user.UpdatedAt).Format(time.DateTime),
+		Role:      user.Role,
 	}
 
 	// w.WriteHeader(http.StatusOK)

@@ -27,9 +27,9 @@ func NewUserRepo(db *DB) *UserRepo {
 
 func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdomain.User, error) {
 	sql := `
-		INSERT INTO users (id, name, surname, email)
-		values ($1, $2, $3, $4)
-		returning id, name, surname, email, created_at, updated_at;
+		INSERT INTO users (id, name, surname, email, role)
+		values ($1, $2, $3, $4, $5)
+		returning id, name, surname, email, created_at, updated_at, role;
 	`
 
 	// INSERT INTO users..., добавляет новую строку в таблицу users и заполняет в ней только эти четыре колонки
@@ -43,14 +43,19 @@ func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdo
 		user.ID = uuid.New()
 	}
 
+	if user.Role == "" {
+		user.Role = userdomain.RoleUser
+	}
+
 	var out userdomain.User
-	err := u.db.Pool.QueryRow(ctx, sql, user.ID, user.Name, user.Surname, user.Email).Scan(
+	err := u.db.Pool.QueryRow(ctx, sql, user.ID, user.Name, user.Surname, user.Email, user.Role).Scan(
 		&out.ID,
 		&out.Name,
 		&out.Surname,
 		&out.Email,
 		&out.CreatedAt,
 		&out.UpdatedAt,
+		&out.Role,
 	)
 
 	if err != nil {
@@ -68,7 +73,7 @@ func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdo
 
 func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*userdomain.User, error) {
 	sql := `
-		SELECT id, name, surname, email, created_at, updated_at
+		SELECT id, name, surname, email, created_at, updated_at, role
 		FROM users
 		WHERE id = $1;
 	`
@@ -81,6 +86,7 @@ func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*userdomain.U
 		&user.Email,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.Role,
 	)
 
 	if err != nil {
@@ -96,7 +102,7 @@ func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*userdomain.U
 
 func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*userdomain.User, error) {
 	sql := `
-		select id, name, surname, email, created_at, updated_at
+		select id, name, surname, email, created_at, updated_at, role
 		from users
 		where email = $1;
 	`
@@ -109,6 +115,7 @@ func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*userdomai
 		&user.Email,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.Role,
 	)
 
 	if err != nil {
@@ -143,7 +150,7 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 		update users
 		set %s
 		where id = $%d
-		returning id, name, surname, email, created_at, updated_at;
+		returning id, name, surname, email, created_at, updated_at, role;
 	`, strings.Join(parts, ", "), wherePos)
 
 	var out userdomain.User
@@ -154,6 +161,7 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 		&out.Email,
 		&out.CreatedAt,
 		&out.UpdatedAt,
+		&out.Role,
 	)
 
 	if err != nil {
