@@ -8,6 +8,7 @@ import (
 	"todo-app/internal/repository/postgre"
 	usersvc "todo-app/internal/service/user"
 	userhandler "todo-app/internal/transport/http/handler/user"
+	"todo-app/internal/transport/http/middleware"
 
 	"github.com/joho/godotenv"
 )
@@ -15,6 +16,7 @@ import (
 func Run() {
 	_ = godotenv.Load()
 	dsn := os.Getenv("DATABASE_URL")
+	port := os.Getenv("PORT")
 
 	db, err := postgre.NewDB(context.Background(), dsn)
 	if err != nil {
@@ -34,8 +36,10 @@ func Run() {
 	router.HandleFunc("PATCH /users/{id}", handler.Update)
 	router.HandleFunc("DELETE /users/{id}", handler.Delete)
 
-	log.Println("Server started on : 8080")
-	err = http.ListenAndServe(":8080", router)
+	mux := middleware.SecureHeaders(router)
+
+	log.Printf("Server started on : %s\n", port)
+	err = http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -14,6 +14,8 @@ const (
 	RoleUser  Role = "user"
 )
 
+type PasswordHash string
+
 // User model
 type User struct {
 	ID        uuid.UUID
