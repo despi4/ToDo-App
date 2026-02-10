@@ -21,3 +21,8 @@ type UserService interface {
 	Update(ctx context.Context, ID uuid.UUID, userUpdate UserUpdate) (User, error)
 	Delete(ctx context.Context, ID uuid.UUID) error
 }
+
+type AuthService interface {
+	Register(ctx context.Context, user User, password string) (error)
+	Login()
+}

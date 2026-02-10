@@ -1,8 +1,10 @@
 package middleware
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
+	userdto "todo-app/internal/transport/http/dto/user"
 )
 
 // Positioning the middleware
@@ -29,7 +31,29 @@ func SecureHeaders(next http.Handler) http.Handler {
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s - %s %s %s", r.RemoteAddr, r.Proto, r.Method, r.URL.RequestURI())
-	
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func Recover(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Println("Recover", err)
+				w.Header().Add("connection", "close")
+
+				errRes := userdto.ErrorResponse{
+					Error:     "Internal Server Error",
+					ErrorCode: http.StatusInternalServerError,
+				}
+
+				w.WriteHeader(http.StatusInternalServerError)
+
+				json.NewEncoder(w).Encode(&errRes)
+			}
+		}()
+
 		next.ServeHTTP(w, r)
 	})
 }
