@@ -5,7 +5,7 @@ CREATE TABLE users (
     last_name varchar(50) not null,
     email text unique not null,
     created_at timestamptz default now(),
-    updated_at timestamptz default now(),
+    updated_at timestamptz default now()
 );
 
 create or replace function update_modified_column()

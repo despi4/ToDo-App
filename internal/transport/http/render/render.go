@@ -11,4 +11,5 @@ func Render(w http.ResponseWriter, name pagedomain.WebPage, tmpl *template.Templ
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
+	w.WriteHeader(http.StatusOK)
 }
