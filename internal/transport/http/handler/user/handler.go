@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"html/template"
 	"log"
 	"net/http"
 	"strings"
@@ -23,11 +24,13 @@ import (
 */
 
 type UserHandler struct {
+	tmpl    *template.Template
 	service userdomain.UserService
 }
 
-func NewUserHandler(service userdomain.UserService) *UserHandler {
+func NewUserHandler(service userdomain.UserService, tmpl *template.Template) *UserHandler {
 	return &UserHandler{
+		tmpl:    tmpl,
 		service: service,
 	}
 }

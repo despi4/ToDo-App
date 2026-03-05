@@ -24,7 +24,7 @@ func Run() {
 	dsn := os.Getenv("DATABASE_URL")
 	port := os.Getenv("PORT")
 	tmpl := template.Must(template.ParseGlob(pattern))
-	
+
 	db, err := db.NewDB(context.Background(), dsn)
 	if err != nil {
 		log.Fatal(err)
@@ -34,7 +34,7 @@ func Run() {
 	// ivan@example.com
 	repo := postgre.NewUserRepo(db)
 	service := usersvc.NewUserService(repo)
-	handler := userhandler.NewUserHandler(service)
+	handler := userhandler.NewUserHandler(service, tmpl)
 	router := http.NewServeMux()
 
 	router.HandleFunc("POST /users", handler.Create)
