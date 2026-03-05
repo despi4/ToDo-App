@@ -1,0 +1,21 @@
+{{define "login"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <head>
+        <title>{{.Title}}</title>
+        <meta charset="urf-8">
+    </head>
+</head>
+<body>
+    <h1>Login</h1>
+    <form>
+        <label for="email">Email:</label><br>
+        <input type="text" id="email" name="email" value="johndoe@example.com"><br>
+        <label for="pass">Password:</label><br>
+        <input type="text" id="pass" name="pass" value="*******">
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
+{{end}}

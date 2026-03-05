@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -14,11 +15,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+	pattern = "ui/templates/*.html"
+)
+
 func Run() {
 	_ = godotenv.Load()
 	dsn := os.Getenv("DATABASE_URL")
 	port := os.Getenv("PORT")
-
+	tmpl := template.Must(template.ParseGlob(pattern))
+	
 	db, err := db.NewDB(context.Background(), dsn)
 	if err != nil {
 		log.Fatal(err)

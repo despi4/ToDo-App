@@ -1,0 +1,22 @@
+{{define "register"}}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{.Title}}</title>
+        <meta charset="urf-8">
+    </head>
+    <body>
+        <form>
+            <label for="fname">Name:</label><br>
+            <input type="text" id="fname" name="fname" value="John"><br>
+            <label for="lname">Surname:</label><br>
+            <input type="text" id="lname" name="lname" value="Doe">
+            <label for="email">Email:</label><br>
+            <input type="text" id="email" name="email" value="johndoe@example.com"><br>
+            <label for="pass">Password:</label><br>
+            <input type="text" id="pass" name="pass" value="*******">
+            <input type="submit" value="Submit">
+        </form>
+    </body>
+</html>
+{{end}}

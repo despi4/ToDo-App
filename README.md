@@ -1,3 +1,3 @@
 # Todo App
 
-## CRUD application for
+## CRUD application
