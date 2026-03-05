@@ -1,10 +1,15 @@
-package domainpage
+package pagedomain
 
-type Page string
+type WebPage string
 
 const (
-	indexPage Page = "index"
-	loginPage Page = "login"
-	register  Page = "register"
-	error     Page = "error"
+	Index WebPage = "index"
+	Register WebPage = "register"
+	Login WebPage = "login"
+	Error WebPage = "error"
 )
+
+type PageInfo struct {
+	Title        string
+	ErrorMessage *string
+}
