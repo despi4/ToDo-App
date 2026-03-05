@@ -1,23 +1,52 @@
-{{define "register"}}
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{.Title}}</title>
+        <title>Register</title>
         <meta charset="urf-8">
     </head>
     <body>
         <h1>Register</h1>
-        <form>
+        <form id="register">
             <label for="fname">Name:</label><br>
             <input type="text" id="fname" name="fname" value="John"><br>
             <label for="lname">Surname:</label><br>
             <input type="text" id="lname" name="lname" value="Doe">
             <label for="email">Email:</label><br>
-            <input type="text" id="email" name="email" value="johndoe@example.com"><br>
+            <input type="email" id="email" name="email" value="johndoe@example.com"><br>
             <label for="pass">Password:</label><br>
             <input type="text" id="pass" name="pass" value="*******">
-            <input type="submit" value="Submit">
+            <button type="submit">Register</button>
         </form>
+
+        <div id="result"></div> 
+        <script>
+        document.getElementById('register').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Останавливаем перезагрузку страницы
+
+            const userData = {
+                name: document.getElementById('fname').value,
+                surname: document.getElementById('lname').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('pass').value
+            };
+
+            // Отправляем данные на Go-сервер
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+
+            const result = await response.json(); // Получаем JSON от Go
+
+            // Обновляем страницу без перезагрузки
+            const resDiv = document.getElementById('result');
+            if (response.ok) {
+                resDiv.innerHTML = `<p style="color:green">Успех! ID нового юзера: ${result.id}</p>`;
+            } else {
+                resDiv.innerHTML = `<p style="color:red">Ошибка: ${result.error}</p>`;
+            }
+        });
+        </script>
     </body>
 </html>
-{{end}}

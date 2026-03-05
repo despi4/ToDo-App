@@ -38,71 +38,7 @@ func NewUserHandler(service userdomain.UserService, tmpl *template.Template) *Us
 }
 
 func (userHandler *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var creatReq userdto.CreateUserRequest
-
-	// 1) Unmarshaling
-	if err := json.NewDecoder(r.Body).Decode(&creatReq); err != nil {
-		w.Header().Set("content-type", "application-json")
-
-		errRes := userdto.ErrorResponse{
-			Error:     userdomain.ErrInvalidArgument.Error(),
-			ErrorCode: http.StatusBadRequest,
-		}
-
-		w.WriteHeader(http.StatusBadRequest)
-
-		json.NewEncoder(w).Encode(&errRes)
-
-		render.Render(w, pagedomain.Register, userHandler.tmpl, pagedomain.PageInfo{})
-
-		log.Printf("User Not Created: %s", err)
-
-		return
-	}
-	defer r.Body.Close()
-
-	var (
-		name    = strings.TrimSpace(creatReq.Name)
-		surname = strings.TrimSpace(creatReq.Surname)
-		email   = strings.TrimSpace(creatReq.Email)
-		role    userdomain.Role
-	)
-
-	ctx := r.Context()
-	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
-	defer cancel()
-
-	if creatReq.Role != nil {
-		role = *creatReq.Role
-	}
-
-	user := userdomain.User{
-		Name:    name,
-		Surname: surname,
-		Email:   email,
-		Role:    role,
-	}
-
-	out, err := userHandler.service.Create(ctx, user)
-	if err != nil {
-		w.Header().Set("content-type", "application-json")
-
-		errRes := userdto.ErrorResponse{
-			Error:     "Internal Server Error",
-			ErrorCode: http.StatusBadRequest,
-		}
-
-		w.WriteHeader(http.StatusBadRequest)
-
-		json.NewEncoder(w).Encode(&errRes)
-
-		log.Printf("User not created: %s", err)
-
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	log.Printf("New User Created by email=%s\n", out.Email)
+	render.Render(w, pagedomain.Register, userHandler.tmpl)
 }
 
 func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {

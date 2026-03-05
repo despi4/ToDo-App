@@ -37,6 +37,8 @@ func Run() {
 	handler := userhandler.NewUserHandler(service, tmpl)
 	router := http.NewServeMux()
 
+	router.HandleFunc("GET /auth/register", handler.Register)
+	router.HandleFunc("POST /auth/register", handler.Register)
 	router.HandleFunc("POST /users", handler.Create)
 	router.HandleFunc("GET /users/{id}", handler.GetByID)
 	router.HandleFunc("GET /users/", handler.GetByEmail)
