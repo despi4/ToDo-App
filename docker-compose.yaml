@@ -1,13 +1,13 @@
 services:
-  postgres:
-    image: postgre:16
+  db:
+    image: postgres:16
     container_name: todoapp-postgres
     environment:
       POSTGRES_DB: todoapp
       POSTGRES_USER: todoapp
       POSTGRES_PASSWORD: todoapp
     ports:
-      - "5433:5433"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
