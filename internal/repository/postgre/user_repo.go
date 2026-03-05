@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"todo-app/internal/domain/user"
+	"todo-app/internal/db"
+	userdomain "todo-app/internal/domain/user"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -16,10 +17,10 @@ import (
 // Repository — это Adapter, который делает базу данных совместимой с бизнес-логикой
 
 type UserRepo struct {
-	db DB
+	db db.DB
 }
 
-func NewUserRepo(db *DB) *UserRepo {
+func NewUserRepo(db *db.DB) *UserRepo {
 	return &UserRepo{
 		db: *db,
 	}
@@ -129,7 +130,7 @@ func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*userdomai
 	return &user, nil
 }
 
-func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate userdomain.UserUpdate) (userdomain.User, error) {
+func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate userdomain.UpdateUser) (userdomain.User, error) {
 	parts, args, pos := updateValidate(userUpdate)
 
 	if len(parts) == 0 {
@@ -173,7 +174,7 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" && pgErr.ConstraintName == "users_email_key" {
-				return userdomain.User{},userdomain.ErrEmailTaken
+				return userdomain.User{}, userdomain.ErrEmailTaken
 			}
 		}
 
@@ -201,7 +202,7 @@ func (u *UserRepo) DeleteUser(ctx context.Context, ID uuid.UUID) error {
 	return nil
 }
 
-func updateValidate(userUpdate userdomain.UserUpdate) (parts []string, args []any, position int) {
+func updateValidate(userUpdate userdomain.UpdateUser) (parts []string, args []any, position int) {
 	parts = make([]string, 0, 4)
 	args = make([]any, 0, 5)
 	position = 1

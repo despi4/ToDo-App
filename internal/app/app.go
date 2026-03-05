@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"todo-app/internal/db"
 	"todo-app/internal/repository/postgre"
 	usersvc "todo-app/internal/service/user"
 	userhandler "todo-app/internal/transport/http/handler/user"
@@ -18,7 +19,7 @@ func Run() {
 	dsn := os.Getenv("DATABASE_URL")
 	port := os.Getenv("PORT")
 
-	db, err := postgre.NewDB(context.Background(), dsn)
+	db, err := db.NewDB(context.Background(), dsn)
 	if err != nil {
 		log.Fatal(err)
 	}

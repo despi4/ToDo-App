@@ -63,7 +63,7 @@ func (userSvc *UserService) GetByEmail(ctx context.Context, email string) (user 
 	return user, nil
 }
 
-func (userSvc *UserService) Update(ctx context.Context, ID uuid.UUID, userUpdate userdomain.UserUpdate) (userdomain.User, error) {
+func (userSvc *UserService) Update(ctx context.Context, ID uuid.UUID, userUpdate userdomain.UpdateUser) (userdomain.User, error) {
 	if ID == uuid.Nil {
 		return users.User{}, users.ErrInvalidArgument
 	}

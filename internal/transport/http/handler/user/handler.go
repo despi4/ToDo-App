@@ -292,7 +292,7 @@ func (userHandler *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
-	user, err := userHandler.service.Update(ctx, id, userdomain.UserUpdate(updateReq))
+	user, err := userHandler.service.Update(ctx, id, userdomain.UpdateUser(updateReq))
 	if err != nil {
 		w.Header().Set("content-type", "application-json")
 
