@@ -7,7 +7,7 @@ import (
 )
 
 func Render(w http.ResponseWriter, name pagedomain.WebPage, tmpl *template.Template, data pagedomain.PageInfo) {
-	err := "not found"
+	errorMsg := "not found"
 
 	switch name {
 	case pagedomain.Register:
@@ -25,9 +25,12 @@ func Render(w http.ResponseWriter, name pagedomain.WebPage, tmpl *template.Templ
 	default:
 		data = pagedomain.PageInfo{
 			Title:        "Error",
-			ErrorMessage: &err,
+			ErrorMessage: &errorMsg,
 		}
 	}
 
-	tmpl.ExecuteTemplate(w, string(name), data)
+	err := tmpl.ExecuteTemplate(w, string(name), data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
 }

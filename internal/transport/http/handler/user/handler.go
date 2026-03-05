@@ -53,7 +53,7 @@ func (userHandler *UserHandler) Register(w http.ResponseWriter, r *http.Request)
 
 		json.NewEncoder(w).Encode(&errRes)
 
-		render.Render(w, "register ", userHandler.tmpl, pagedomain.PageInfo{})
+		render.Render(w, pagedomain.Register, userHandler.tmpl, pagedomain.PageInfo{})
 
 		log.Printf("User Not Created: %s", err)
 
