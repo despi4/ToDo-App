@@ -23,8 +23,8 @@ func Run() {
 	_ = godotenv.Load()
 	dsn := os.Getenv("DATABASE_URL")
 	port := os.Getenv("PORT")
-	// tmpl := template.Must(template.ParseGlob(pattern))
-	tmpl := template.Must(template.ParseFiles("ui/templates/register.html"))
+
+	tmpl := template.Must(template.ParseGlob(pattern))
 
 	db, err := db.NewDB(context.Background(), dsn)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 	pagedomain "todo-app/internal/domain/page"
@@ -38,7 +39,7 @@ func NewUserHandler(service userdomain.UserService, tmpl *template.Template) *Us
 }
 
 func (userHandler *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	render.Render(w, pagedomain.Register, userHandler.tmpl)
+	render.Render(w, pagedomain.Register, nil, userHandler.tmpl)
 }
 
 func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -56,6 +57,16 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(&errRes)
+
+		code := strconv.Itoa(errRes.ErrorCode)
+
+		data := pagedomain.ErrorPage{
+			Title:      "Error " + code,
+			Error:      errRes.Error,
+			StatusCode: code,
+		}
+
+		render.Render(w, pagedomain.Error, &data, userHandler.tmpl)
 
 		log.Printf("User Not Created: %s", err)
 
@@ -97,6 +108,16 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(&errRes)
+
+		code := strconv.Itoa(errRes.ErrorCode)
+
+		data := pagedomain.ErrorPage{
+			Title:      "Error " + code,
+			Error:      errRes.Error,
+			StatusCode: code,
+		}
+
+		render.Render(w, pagedomain.Error, &data, userHandler.tmpl)
 
 		log.Printf("User not created: %s", err)
 

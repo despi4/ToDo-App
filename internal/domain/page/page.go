@@ -9,9 +9,8 @@ const (
 	Error    WebPage = "error"
 )
 
-type PageInfo struct {
-	Title        string
-	Message      *string
-	ErrorMessage *string
-	StatusCode   *int
+type ErrorPage struct {
+	Title      string
+	Error      string
+	StatusCode string
 }
