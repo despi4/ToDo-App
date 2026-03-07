@@ -6,10 +6,11 @@ import userdomain "todo-app/internal/domain/user"
 // Marshaling(Сериализаций) - Go Struct в string JSON, для отправки данных
 
 type CreateUserRequest struct {
-	Name    string           `json:"name"`
-	Surname string           `json:"surname"`
-	Email   string           `json:"email"`
-	Role    *userdomain.Role `json:"role"`
+	Name     string           `json:"name"`
+	Surname  string           `json:"surname"`
+	Email    string           `json:"email"`
+	Role     *userdomain.Role `json:"role"`
+	Password string           `json:"password"`
 }
 
 type UpdateUserRequest struct {

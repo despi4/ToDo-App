@@ -81,6 +81,8 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		role    userdomain.Role
 	)
 
+	log.Println(name, surname, email, role)
+
 	ctx := r.Context()
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()

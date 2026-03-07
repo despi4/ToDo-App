@@ -18,13 +18,14 @@ type PasswordHash string
 
 // User model
 type User struct {
-	ID        uuid.UUID
-	Role      Role
-	Name      string
-	Surname   string
-	Email     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID           uuid.UUID
+	Role         Role
+	Name         string
+	Surname      string
+	Email        string
+	PasswordHash PasswordHash
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // Domain Errors
