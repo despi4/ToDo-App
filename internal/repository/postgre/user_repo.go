@@ -27,10 +27,10 @@ func NewUserRepo(db *db.DB) *UserRepo {
 }
 
 func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdomain.User, error) {
-	sql := `
-		INSERT INTO users (id, name, surname, email, role)
-		values ($1, $2, $3, $4, $5)
-		returning id, name, surname, email, created_at, updated_at, role;
+	query := `
+		INSERT INTO users (id, first_name, last_name, email, user_role, password_hash)
+		values ($1, $2, $3, $4, $5, $6)
+		returning id, name, surname, email, created_at, updated_at, role, password_hash;
 	`
 
 	// INSERT INTO users..., добавляет новую строку в таблицу users и заполняет в ней только эти четыре колонки
@@ -48,8 +48,10 @@ func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdo
 		user.Role = userdomain.RoleUser
 	}
 
+	user.Email = strings.ToLower(strings.TrimSpace(user.Email))
+
 	var out userdomain.User
-	err := u.db.Pool.QueryRow(ctx, sql, user.ID, user.Name, user.Surname, user.Email, user.Role).Scan(
+	err := u.db.Pool.QueryRow(ctx, query, user.ID, user.Name, user.Surname, user.Email, user.Role, user.PasswordHash).Scan(
 		&out.ID,
 		&out.Name,
 		&out.Surname,
@@ -57,6 +59,7 @@ func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdo
 		&out.CreatedAt,
 		&out.UpdatedAt,
 		&out.Role,
+		&out.PasswordHash,
 	)
 
 	if err != nil {
@@ -73,14 +76,14 @@ func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdo
 }
 
 func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*userdomain.User, error) {
-	sql := `
+	query := `
 		SELECT id, name, surname, email, created_at, updated_at, role
 		FROM users
 		WHERE id = $1;
 	`
 
 	var user userdomain.User
-	err := u.db.Pool.QueryRow(ctx, sql, ID).Scan(
+	err := u.db.Pool.QueryRow(ctx, query, ID).Scan(
 		&user.ID,
 		&user.Name,
 		&user.Surname,
@@ -102,14 +105,16 @@ func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*userdomain.U
 }
 
 func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*userdomain.User, error) {
-	sql := `
+	query := `
 		select id, name, surname, email, created_at, updated_at, role
 		from users
 		where email = $1;
 	`
 
+	email = strings.ToLower(strings.TrimSpace(email))
+
 	var user userdomain.User
-	err := u.db.Pool.QueryRow(ctx, sql, email).Scan(
+	err := u.db.Pool.QueryRow(ctx, query, email).Scan(
 		&user.ID,
 		&user.Name,
 		&user.Surname,
@@ -147,7 +152,7 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 
 	wherePos := pos
 
-	sql := fmt.Sprintf(`
+	query := fmt.Sprintf(`
 		update users
 		set %s
 		where id = $%d
@@ -155,7 +160,7 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 	`, strings.Join(parts, ", "), wherePos)
 
 	var out userdomain.User
-	err := u.db.Pool.QueryRow(ctx, sql, args...).Scan(
+	err := u.db.Pool.QueryRow(ctx, query, args...).Scan(
 		&out.ID,
 		&out.Name,
 		&out.Surname,
@@ -184,24 +189,6 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 	return out, nil
 }
 
-func (u *UserRepo) DeleteUser(ctx context.Context, ID uuid.UUID) error {
-	sql := `
-		delete from users
-		where id = $1;
-	`
-
-	cmd, err := u.db.Pool.Exec(ctx, sql, ID)
-	if err != nil {
-		return fmt.Errorf("repository DeleteUser (id=%s): %w", ID, err)
-	}
-
-	if cmd.RowsAffected() == 0 {
-		return userdomain.ErrNotFound
-	}
-
-	return nil
-}
-
 func updateValidate(userUpdate userdomain.UpdateUser) (parts []string, args []any, position int) {
 	parts = make([]string, 0, 4)
 	args = make([]any, 0, 5)
@@ -226,4 +213,41 @@ func updateValidate(userUpdate userdomain.UpdateUser) (parts []string, args []an
 	}
 
 	return
+}
+
+func (u *UserRepo) UpdateUserPassword(ctx context.Context, ID uuid.UUID, new_hash userdomain.PasswordHash) error {
+	query := `
+		update users
+		set password_hash = $1, updated_at = now()
+		where id = $2
+	`
+
+	cmdTag, err := u.db.Pool.Exec(ctx, query, new_hash, ID)
+	if err != nil {
+		return fmt.Errorf("repository UpdateUserPassword (id=%s): %w", ID, err)
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return userdomain.ErrNotFound
+	}
+
+	return nil
+}
+
+func (u *UserRepo) DeleteUser(ctx context.Context, ID uuid.UUID) error {
+	sql := `
+		delete from users
+		where id = $1;
+	`
+
+	cmd, err := u.db.Pool.Exec(ctx, sql, ID)
+	if err != nil {
+		return fmt.Errorf("repository DeleteUser (id=%s): %w", ID, err)
+	}
+
+	if cmd.RowsAffected() == 0 {
+		return userdomain.ErrNotFound
+	}
+
+	return nil
 }
