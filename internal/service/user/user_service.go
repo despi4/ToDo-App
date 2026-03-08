@@ -9,6 +9,7 @@ import (
 	users "todo-app/internal/domain/user"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var emailRegex = regexp.MustCompile(`(?i)^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$`)
@@ -23,12 +24,19 @@ func NewUserService(repo userdomain.UserRepository) *UserService {
 	}
 }
 
-func (userSvc *UserService) Create(ctx context.Context, user userdomain.User) (userdomain.User, error) {
+func (userSvc *UserService) Create(ctx context.Context, user userdomain.User, password string) (userdomain.User, error) {
 	if err := validateUser(&user.Name, &user.Surname, &user.Email); err != nil {
 		return users.User{}, err
 	}
 
-	user, err := userSvc.repo.CreateUser(ctx, user)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return userdomain.User{}, err
+	}
+
+	user.PasswordHash = userdomain.PasswordHash(hash)
+
+	user, err = userSvc.repo.CreateUser(ctx, user)
 	if err != nil {
 		return users.User{}, err
 	}
@@ -87,6 +95,29 @@ func (userSvc *UserService) Update(ctx context.Context, ID uuid.UUID, userUpdate
 	}
 
 	return user, nil
+}
+
+func (userSvc *UserService) UpdatePassword(ctx context.Context, ID uuid.UUID, old_password, new_password string) error {
+	user, err := userSvc.repo.GetUserByID(ctx, ID)
+	if err != nil {
+		return err
+	}
+
+	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(old_password)); err != nil {
+		return err
+	}
+
+	new_hash, err := bcrypt.GenerateFromPassword([]byte(new_password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	err = userSvc.repo.UpdatePasswordHash(ctx, ID, users.PasswordHash(new_hash))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (userSvc *UserService) Delete(ctx context.Context, ID uuid.UUID) error {

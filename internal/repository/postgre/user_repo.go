@@ -215,7 +215,7 @@ func updateValidate(userUpdate userdomain.UpdateUser) (parts []string, args []an
 	return
 }
 
-func (u *UserRepo) UpdateUserPassword(ctx context.Context, ID uuid.UUID, new_hash userdomain.PasswordHash) error {
+func (u *UserRepo) UpdatePasswordHash(ctx context.Context, ID uuid.UUID, new_hash userdomain.PasswordHash) error {
 	query := `
 		update users
 		set password_hash = $1, updated_at = now()
