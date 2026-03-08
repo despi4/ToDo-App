@@ -30,11 +30,14 @@ type User struct {
 
 // Domain Errors
 var (
-	ErrUnauthorized    = errors.New("unauthorized")
-	ErrNotFound        = errors.New("not found")
-	ErrInvalidArgument = errors.New("invalid argument")
-	ErrConflict        = errors.New("conflict")
-	ErrForbidden       = errors.New("forbidden")
-	ErrAlreadyExists   = errors.New("already exists")
-	ErrEmailTaken      = errors.New("email taken")
+	ErrShortPassword     = errors.New("password must contain at least 6 characters")
+	ErrUnauthorized      = errors.New("unauthorized")
+	ErrNotFound          = errors.New("not found")
+	ErrInvalidArgument   = errors.New("invalid argument")
+	ErrConflict          = errors.New("conflict")
+	ErrForbidden         = errors.New("forbidden")
+	ErrAlreadyExists     = errors.New("already exists")
+	ErrEmailTaken        = errors.New("email taken")
+	ErrInvalidCredential = errors.New("invalid credential")
+	ErrSamePassword = errors.New("same password")
 )
