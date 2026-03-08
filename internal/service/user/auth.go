@@ -53,7 +53,7 @@ func (auth *AuthService) Register(ctx context.Context, input userdomain.Register
 func (auth *AuthService) Login(ctx context.Context, email, password string) error {
 	email = strings.ToLower(strings.TrimSpace(email))
 
-	if email == "" {
+	if email == "" || password == "" {
 		return userdomain.ErrInvalidArgument
 	}
 
@@ -75,6 +75,10 @@ func (auth *AuthService) ChangePassword(ctx context.Context, ID uuid.UUID, old_p
 		return err
 	}
 
+	if old_password == "" || new_password == "" {
+		return userdomain.ErrInvalidArgument
+	}
+
 	if old_password == new_password {
 		return userdomain.ErrSamePassword
 	}
@@ -88,7 +92,7 @@ func (auth *AuthService) ChangePassword(ctx context.Context, ID uuid.UUID, old_p
 		return err
 	}
 
-	new_hash, err := bcrypt.GenerateFromPassword([]byte(new_password), bcrypt.DefaultCost)
+	new_hash, err := hashPassword(new_password)
 	if err != nil {
 		return err
 	}
@@ -102,7 +106,7 @@ func (auth *AuthService) ChangePassword(ctx context.Context, ID uuid.UUID, old_p
 
 func passwordValidation(password string) error {
 	if len(password) == 0 {
-		return userdomain.ErrInvalidCredential
+		return userdomain.ErrInvalidArgument
 	} else if len(password) < 6 {
 		return userdomain.ErrShortPassword
 	}
