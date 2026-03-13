@@ -12,5 +12,6 @@ type AuthService interface {
 	ChangePassword(ctx context.Context, userID uuid.UUID, old_password, new_password string) error
 
 	// должен принять refresh token и вернуть новую пару
-	RefreshToken(ctx context.Context, refreshToken string) (TokenPair, error)
+	RefreshToken(ctx context.Context, refreshToken string) (*TokenPair, error)
+	Logout(ctx context.Context)
 }

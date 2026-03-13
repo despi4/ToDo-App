@@ -1,6 +1,8 @@
 package authdomain
 
-import "errors"
+import (
+	"errors"
+)
 
 type RegisterUser struct {
 	Name     string
@@ -17,8 +19,8 @@ type TokenPair struct {
 type TokenType int
 
 const (
-	AccessToken TokenType = iota
-	RefreshToken
+	AccessTkn TokenType = iota
+	RefreshTkn
 )
 
 var (
