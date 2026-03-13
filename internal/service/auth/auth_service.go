@@ -11,12 +11,14 @@ import (
 )
 
 type AuthService struct {
-	repo userdomain.UserRepository
+	repo       userdomain.UserRepository
+	jwtService JWTService
 }
 
-func NewAuthService(repo userdomain.UserRepository) *AuthService {
+func NewAuthService(repo userdomain.UserRepository, jwtService JWTService) *AuthService {
 	return &AuthService{
-		repo: repo,
+		repo:       repo,
+		jwtService: jwtService,
 	}
 }
 
@@ -68,6 +70,19 @@ func (auth *AuthService) Login(ctx context.Context, email, password string) (aut
 		return tokenPair, userdomain.ErrUnauthorized
 	}
 
+	accessToken, err := auth.jwtService.GenerateAccessToken(user.ID, user.Role)
+	if err != nil {
+		return tokenPair, err
+	}
+
+	refreshToken, err := auth.jwtService.GenerateRefreshToken(user.ID, user.Role)
+	if err != nil {
+		return tokenPair, err
+	}
+
+	tokenPair.AccessToken = accessToken
+	tokenPair.RefreshToken = refreshToken
+
 	return tokenPair, nil
 }
 
@@ -106,8 +121,32 @@ func (auth *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, o
 	return nil
 }
 
-func RefreshToken(ctx context.Context, refreshToken string) (authdomain.TokenPair, error) {
-	var tokenPair authdomain.TokenPair
+func (auth *AuthService) RefreshToken(ctx context.Context, refreshTkn string) (*authdomain.TokenPair, error) {
+	claims, err := auth.jwtService.ValidateToken(refreshTkn, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		userID = claims.UserID
+		role = claims.Role
+	)
+
+	accessToken, err := auth.jwtService.GenerateAccessToken(userID, role)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := auth.jwtService.GenerateRefreshToken(userID, role)
+	if err != nil {
+		return nil, err
+	}
+
+	tokenPair := &authdomain.TokenPair{
+		AccessToken: accessToken,
+		RefreshToken: refreshToken,
+	}
+	
 	return tokenPair, nil
 }
 

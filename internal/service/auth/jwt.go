@@ -35,7 +35,7 @@ func NewJWTService(accessSecret, refreshSecret []byte, accessTokenTTL, refreshTo
 	}
 }
 
-func (j *JWTService) generateAccessToken(userID uuid.UUID, role userdomain.Role) (string, error) {
+func (j *JWTService) GenerateAccessToken(userID uuid.UUID, role userdomain.Role) (string, error) {
 	now := time.Now()
 
 	log.Println("access now time", now)
@@ -57,7 +57,7 @@ func (j *JWTService) generateAccessToken(userID uuid.UUID, role userdomain.Role)
 	return token.SignedString(token)
 }
 
-func (j *JWTService) generateRefreshToken(userID uuid.UUID, role userdomain.Role) (string, error) {
+func (j *JWTService) GenerateRefreshToken(userID uuid.UUID, role userdomain.Role) (string, error) {
 	now := time.Now()
 
 	refreshClaims := Claims{
