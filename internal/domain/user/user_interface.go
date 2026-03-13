@@ -23,10 +23,3 @@ type UserService interface {
 	UpdatePassword(ctx context.Context, ID uuid.UUID, old_password, new_password string) error
 	Delete(ctx context.Context, ID uuid.UUID) error
 }
-
-type AuthService interface {
-	Register(ctx context.Context, input RegisterUser) error
-	Login(ctx context.Context, email string, password string) error
-	ChangePassword(ctx context.Context, old_password, new_password string) error
-	RefreshToken()
-}

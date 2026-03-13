@@ -1,8 +1,9 @@
-package usersvc
+package authsvc
 
 import (
 	"context"
 	"strings"
+	authdomain "todo-app/internal/domain/auth"
 	userdomain "todo-app/internal/domain/user"
 
 	"github.com/google/uuid"
@@ -19,7 +20,7 @@ func NewAuthService(repo userdomain.UserRepository) *AuthService {
 	}
 }
 
-func (auth *AuthService) Register(ctx context.Context, input userdomain.RegisterUser) error {
+func (auth *AuthService) Register(ctx context.Context, input authdomain.RegisterUser) error {
 	user := userdomain.User{
 		Name:    strings.TrimSpace(input.Name),
 		Surname: strings.TrimSpace(input.Surname),
@@ -50,27 +51,28 @@ func (auth *AuthService) Register(ctx context.Context, input userdomain.Register
 	return nil
 }
 
-func (auth *AuthService) Login(ctx context.Context, email, password string) error {
+func (auth *AuthService) Login(ctx context.Context, email, password string) (authdomain.TokenPair, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
+	var tokenPair authdomain.TokenPair
 
 	if email == "" || password == "" {
-		return userdomain.ErrInvalidArgument
+		return tokenPair, userdomain.ErrInvalidArgument
 	}
 
 	user, err := auth.repo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return err
+		return tokenPair, err
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return userdomain.ErrUnauthorized
+		return tokenPair, userdomain.ErrUnauthorized
 	}
 
-	return nil
+	return tokenPair, nil
 }
 
-func (auth *AuthService) ChangePassword(ctx context.Context, ID uuid.UUID, old_password, new_password string) error {
-	user, err := auth.repo.GetUserByID(ctx, ID)
+func (auth *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, old_password, new_password string) error {
+	user, err := auth.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -97,11 +99,16 @@ func (auth *AuthService) ChangePassword(ctx context.Context, ID uuid.UUID, old_p
 		return err
 	}
 
-	if err = auth.repo.UpdatePasswordHash(ctx, ID, userdomain.PasswordHash(new_hash)); err != nil {
+	if err = auth.repo.UpdatePasswordHash(ctx, userID, userdomain.PasswordHash(new_hash)); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func RefreshToken(ctx context.Context, refreshToken string) (authdomain.TokenPair, error) {
+	var tokenPair authdomain.TokenPair
+	return tokenPair, nil
 }
 
 func passwordValidation(password string) error {
