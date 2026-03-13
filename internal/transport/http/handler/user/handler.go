@@ -98,7 +98,7 @@ func (userHandler *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Role:    role,
 	}
 
-	out, err := userHandler.service.Create(ctx, user)
+	out, err := userHandler.service.Create(ctx, user, "")
 	if err != nil {
 		w.Header().Set("content-type", "application-json")
 

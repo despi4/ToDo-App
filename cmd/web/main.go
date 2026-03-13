@@ -1,68 +1,66 @@
 package main
 
-import "todo-app/internal/app"
+import (
+	"fmt"
+	"log"
+	"os"
+	"time"
 
-// URL - endpoints | http://librarian.com/books
-// URI - уникальный адресс рессурса | http://librarian.com/books?author=Gogol (GET parametr)
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/joho/godotenv"
+)
 
-// API - интерфейс для взаимодействия между программами
+func JWTSecret() []byte {
+	_ = godotenv.Load()
 
-// Поток данных
-// HTTP Request >> handlers/ >> service/ >> repository/ >> models/
+	jwtSecret := os.Getenv("JWT_ACCESS_SECRET")
 
-// 1. Хэндлер получает JSON → создаёт models.Todo
-// 2. Вызывает service.CreateTodo(title)
+	return []byte(jwtSecret)
+}
 
-// 3. Сервис:
-//    - проверяет: title не пустой, не длинный и т.д.
-//    - создаёт todo := models.Todo{Title: title, Done: false}
-//    - вызывает repo.Create(&todo)
+func genrateToken(UserID uuid.UUID, secretKey []byte) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": UserID,
+		"exp":     time.Now().Add(time.Second * 15).Unix(),
+	}
 
-// 4. Репозиторий:
-//    - выполняет INSERT
-//    - возвращает ошибку, если БД отказалась (например, дубль)
-//    - НЕ проверяет title!
+	fmt.Println("Claims:", claims)
 
-// func Handler(w http.ResponseWriter, r *http.Request) {
-// 	msg := "Hello"
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-// 	w.Write([]byte(msg))
-// }
+	fmt.Println("Token", token)
 
-// func OtherHandler(w http.ResponseWriter, r *http.Request) {
-// 	msg := "Goodbye"
+	strToken, err := token.SignedString(secretKey)
 
-// 	w.Write([]byte(msg))
-// }
+	return strToken, err
+}
 
-// func Logger(next http.Handler) http.Handler {
-// 	function := func(w http.ResponseWriter, r *http.Request) {
-// 		log.Printf("addr:%s method:%s uri:%s proto:%s", r.RemoteAddr, r.Method, r.RequestURI, r.Proto)
-
-// 		next.ServeHTTP(w, r)
-// 	}
-
-// 	return http.HandlerFunc(function)
-// }
-
-// func Router() {
-// 	http.HandleFunc("/salam", Handler)
-
-// 	mux := http.NewServeMux()
-
-// 	mux.HandleFunc("/goodbye", OtherHandler)
-
-// 	m := Logger(mux)
-
-// 	mux.HandleFunc("/salam", Handler)
-
-// 	http.ListenAndServe(":8080", m)
-// }
-
-// func main() {
-// 	Router()
-// }
+func parseToken(tokenString string, secretKey []byte) (*jwt.Token, error) {
+    return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+        return secretKey, nil
+    })
+}
 
 func main() {
-	app.Run()
+	userID, err := uuid.NewUUID()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	secret := JWTSecret()
+
+	token, err := genrateToken(userID, secret)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("String Token", token)
+
+	t, err := parseToken(token, secret)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(t.Valid)
 }
