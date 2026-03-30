@@ -30,7 +30,7 @@ func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdo
 	query := `
 		INSERT INTO users (id, first_name, last_name, email, user_role, password_hash)
 		values ($1, $2, $3, $4, $5, $6)
-		returning id, name, surname, email, created_at, updated_at, role, password_hash;
+		returning id, first_name, last_name, email, created_at, updated_at, role, password_hash;
 	`
 
 	// INSERT INTO users..., добавляет новую строку в таблицу users и заполняет в ней только эти четыре колонки
@@ -77,7 +77,7 @@ func (u *UserRepo) CreateUser(ctx context.Context, user userdomain.User) (userdo
 
 func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*userdomain.User, error) {
 	query := `
-		SELECT id, name, surname, email, created_at, updated_at, role
+		SELECT id, first_name, last_name, email, created_at, updated_at, role
 		FROM users
 		WHERE id = $1;
 	`
@@ -106,7 +106,7 @@ func (u *UserRepo) GetUserByID(ctx context.Context, ID uuid.UUID) (*userdomain.U
 
 func (u *UserRepo) GetUserByEmail(ctx context.Context, email string) (*userdomain.User, error) {
 	query := `
-		select id, name, surname, email, created_at, updated_at, role
+		select id, first_name, last_name, email, created_at, updated_at, role
 		from users
 		where email = $1;
 	`
@@ -156,7 +156,7 @@ func (u *UserRepo) UpdateUser(ctx context.Context, ID uuid.UUID, userUpdate user
 		update users
 		set %s
 		where id = $%d
-		returning id, name, surname, email, created_at, updated_at, role;
+		returning id, first_name, last_name, email, created_at, updated_at, role;
 	`, strings.Join(parts, ", "), wherePos)
 
 	var out userdomain.User
@@ -201,13 +201,13 @@ func updateValidate(userUpdate userdomain.UpdateUser) (parts []string, args []an
 	}
 
 	if userUpdate.Name != nil {
-		parts = append(parts, fmt.Sprintf("name = $%d", position))
+		parts = append(parts, fmt.Sprintf("first_name = $%d", position))
 		args = append(args, *userUpdate.Name)
 		position++
 	}
 
 	if userUpdate.Surname != nil {
-		parts = append(parts, fmt.Sprintf("surname = $%d", position))
+		parts = append(parts, fmt.Sprintf("last_name = $%d", position))
 		args = append(args, *userUpdate.Surname)
 		position++
 	}
